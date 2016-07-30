@@ -1,5 +1,6 @@
 package com.davidparkeredwards.fono;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
@@ -7,6 +8,8 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.JsonReader;
 import android.util.JsonToken;
 import android.util.Log;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -70,7 +73,8 @@ public class EventfulResults extends AppCompatActivity {
             String category = jsonEvent.getString("categories");
             String linkToOrigin = jsonEvent.getString("url");
 
-            FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin);            Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
+            FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin);
+            Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
             eventsList.add(newFonoEvent);
 
         }
@@ -99,6 +103,17 @@ public class EventfulResults extends AppCompatActivity {
 
         ListView listView = (ListView) findViewById(R.id.main_list_view);
         listView.setAdapter(eventsListAdapter);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
+
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+
+                Intent intent = new Intent(getApplicationContext(),EventDetail.class)
+                        .putExtra(Intent.EXTRA_TEXT, "ID of event to display");
+                startActivity(intent);
+
+            }
+        });
     }
 
     public class FetchEventsTask extends AsyncTask<String,Void,String> {
