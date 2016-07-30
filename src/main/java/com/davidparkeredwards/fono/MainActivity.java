@@ -137,7 +137,7 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
     public void onConnected(Bundle connectionHint) {
         Log.i(LOG_TAG, "onConnected: Connecting ");
         packageManager = getPackageManager();
-        hasPermission = packageManager.checkPermission("android.permission.ACCESS_COARSE_LOCATION","com.davidparkeredwards.fono");
+        hasPermission = packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION","com.davidparkeredwards.fono");
         Log.i(LOG_TAG, "onConnected: " + hasPermission);
         if(hasPermission == packageManager.PERMISSION_GRANTED) {
             mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
@@ -146,7 +146,9 @@ public class MainActivity extends AppCompatActivity implements GoogleApiClient.C
                 locCoordinates = (String.valueOf(mLastLocation.getLatitude()) +"," + String.valueOf(mLastLocation.getLongitude()));
                 mLatitudeText.setText(locCoordinates);
                // mLongitudeText.setText(String.valueOf(mLastLocation.getLongitude()));
+
             }
+            Log.i("Location Info", "Current location: " + locCoordinates);
         }
     }
 
