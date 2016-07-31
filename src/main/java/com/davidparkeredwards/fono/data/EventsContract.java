@@ -11,6 +11,7 @@ public class EventsContract {
         public static final String TABLE_NAME = "events";
 
         //All columns presently String type
+        public static final String COLUMN_REQUEST_COORDINATES = "request_coordinates";
         public static final String COLUMN_LOCATION_COORDINATES = "location_coordinates";
         public static final String COLUMN_NAME = "name";
         public static final String COLUMN_VENUE_NAME = "venue_name";
