@@ -14,6 +14,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
 import com.davidparkeredwards.fono.data.EventDbHelper;
+import com.davidparkeredwards.fono.data.EventDbManager;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -56,7 +57,13 @@ public class EventRequest extends AsyncTask<String, Void, String> {
         super.onPostExecute(jsonString);
         try {
             List<FonoEvent> eventsList = parseJsonString(jsonString);
-           // updateDB();
+            EventDbManager dbManager = new EventDbManager(context);
+            dbManager.createDbTable(eventsList, centerLocation);
+            //Steps: create DB if not created, this should just happen once.
+            //     : delete all the records from previous query
+            //     : save all records from current query
+            //     : access records to populate fields
+
             updateListView(eventsList);
 
         } catch(JSONException e) {
