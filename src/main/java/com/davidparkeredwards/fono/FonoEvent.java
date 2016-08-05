@@ -69,8 +69,9 @@ public class FonoEvent {
     String description;
     String category;
     String linkToOrigin;
+    int id;
 
-    public FonoEvent(String name, String date, String venueName, String address, String description, String category, String linkToOrigin) {
+    public FonoEvent(String name, String date, String venueName, String address, String description, String category, String linkToOrigin, int id) {
         this.name = name;
         this.date = date;
         this.venueName = venueName;
@@ -78,6 +79,10 @@ public class FonoEvent {
         this.description = description;
         this.category = category;
         this.linkToOrigin = linkToOrigin;
+        this.id = id;
     }
 
+    public String toString() {
+        return this.name + "\n" + this.venueName;
+    }
 }

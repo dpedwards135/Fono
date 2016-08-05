@@ -29,8 +29,8 @@ public class EventDbManager {
         try {
             EventDbHelper eventDbHelper = new EventDbHelper(context);
             SQLiteDatabase db = eventDbHelper.getWritableDatabase();
-            insertValues(db);
-            readValues(db);
+            //insertValues(db);
+            //readValues(db);
             deleteEventRecords(db);
             Log.i(TAG, "createDbTable: Deleted Events");
             readValues(db);

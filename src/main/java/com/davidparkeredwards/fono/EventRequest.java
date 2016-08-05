@@ -40,7 +40,7 @@ public class EventRequest extends AsyncTask<String, Void, String> {
 
     String centerLocation;
 
-    ArrayAdapter<Object> eventsListAdapter;
+    ArrayAdapter<FonoEvent> eventsListAdapter;
     private Context context;
     ListView listView;
 
@@ -64,7 +64,7 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             //     : save all records from current query
             //     : access records to populate fields
 
-            updateListView(eventsList);
+            updateListView();
 
         } catch(JSONException e) {
             Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
@@ -165,8 +165,9 @@ public class EventRequest extends AsyncTask<String, Void, String> {
                 String description = jsonEvent.getString("description");
                 String category = jsonEvent.getString("categories");
                 String linkToOrigin = jsonEvent.getString("url");
+                int id = 0;
 
-                FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin);
+                FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin, id);
                 Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
                 eventsList.add(newFonoEvent);
 
@@ -175,30 +176,51 @@ public class EventRequest extends AsyncTask<String, Void, String> {
 
         }
 
-    public void updateListView(List<FonoEvent> eventsList) {
+    public List getEventsList() {
+        List<FonoEvent> eventsList = new ArrayList();
 
-        List summaryList = new ArrayList();
-        for(FonoEvent event : eventsList) {
-            String detailName = event.name;
-            String detailVenueName = event.venueName;
-            summaryList.add(detailName + "\n" + detailVenueName);
+        EventDbHelper eventDbHelper = new EventDbHelper(context);
+        SQLiteDatabase db = eventDbHelper.getReadableDatabase();
+        Cursor cursor = db.query("EVENTS",
+                new String[] {"NAME", "VENUE_NAME", "_id"},
+                null,null,null,null,null);
+
+        while (cursor.moveToNext()) {
+
+            Log.i("getEventsList", "readValues: " + cursor.getString(0) + cursor.getString(1) + cursor.getString(2));
+            String detailName = cursor.getString(0);
+            String detailVenueName = cursor.getString(1);
+            int id = cursor.getInt(2);
+
+            FonoEvent newEvent = new FonoEvent(detailName, null, detailVenueName, null, null, null, null, id);
+
+            eventsList.add(newEvent);
+            Log.i("Check Events List", "getEventsList: " + eventsList.toString());
+
         }
 
-        eventsListAdapter = new ArrayAdapter<Object>(
+        return eventsList;
+    }
+
+    public void updateListView() {
+
+        List<FonoEvent> eventsList = getEventsList();
+
+        eventsListAdapter = new ArrayAdapter<FonoEvent>(
                 context, //getActivity() if in fragment
                 R.layout.list_item_events,
                 R.id.list_item_events_textview,
-                summaryList);
+                eventsList);
 
         //ListView listView = (ListView) findViewById(R.id.main_list_view);//Pass proper view in with constructor
         listView.setAdapter(eventsListAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
 
             @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long l) {
+            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
                 Intent intent = new Intent(context,EventDetail.class)
-                        .putExtra(Intent.EXTRA_TEXT, "ID of event to display");
+                        .putExtra("Record ID", id);
                 context.startActivity(intent);
 
             }
