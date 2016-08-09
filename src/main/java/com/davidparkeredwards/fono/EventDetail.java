@@ -20,41 +20,53 @@ public class EventDetail extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_event_detail);
         Intent starterIntent = getIntent();
-        Long id = starterIntent.getLongExtra("Record ID", -1);
-        Log.i("Detail View", "onCreate: " + id.toString());
-        TextView detailText = (TextView) findViewById(R.id.detailText);
-        detailText.setText(id.toString());
+        int id = starterIntent.getIntExtra("Record ID", 1);
+        Log.i("Detail View", "onCreate: " + id);
         String event = getEvent(id);
+        TextView detailText = (TextView) findViewById(R.id.detailText);
         detailText.setText(event);
 
 
 
     }
 
-    public String getEvent(long id) {
-        int intID = (int) id;
-        Log.i("Check ID", "getEvent: " + intID);
+    public String getEvent(int id) {
+
+        Log.i("Check ID", "getEvent: " + id);
         String event = "No Event";
 
         EventDbHelper eventDbHelper = new EventDbHelper(this);
         SQLiteDatabase db = eventDbHelper.getReadableDatabase();
+
         Cursor cursor = db.query("EVENTS",
-                new String[]{"NAME", "VENUE_NAME", "_id"},
+                new String[]{"NAME", "VENUE_NAME", "_id", "ADDRESS", "DESCRIPTION", "CATEGORY", "LINK_TO_ORIGIN"},
+                //null,
                 "_id = ?",
-                new String[]{Integer.toString(intID)},
+                //new String[]{"%The Secret Societies Tour%"},
+                new String[]{Integer.toString(id)},
+                //null,
                 null, null, null);
 
         if (cursor.moveToFirst()) {
 
-            Log.i("getEventsList", "readValues: " + cursor.getString(0) + cursor.getString(1) + cursor.getString(2));
+            Log.i("getEventsList", "readValues: " + cursor.getString(2));
             String detailName = cursor.getString(0);
             String detailVenueName = cursor.getString(1);
-            id = cursor.getInt(2);
+            String detailAddress = cursor.getString(3);
+            String detailDescription = cursor.getString(4);
+            String detailCategory = cursor.getString(5);
+            String detailLinkToOrigin = cursor.getString(6);
+            //id = cursor.getInt(2);
 
-            event = detailName + detailVenueName;
-
-
+            event = detailName + "\n" + "\n"
+                    + detailVenueName + "\n" + "\n"
+                    + detailAddress + "\n" + "\n"
+                    + detailDescription + "\n" + "\n"
+                    + detailCategory + "\n" + "\n"
+                    + detailLinkToOrigin;
         }
+        //Log.i("Check getEvent", "getEvent: " + event.toString());
+        cursor.close();
         return event;
     }
 }

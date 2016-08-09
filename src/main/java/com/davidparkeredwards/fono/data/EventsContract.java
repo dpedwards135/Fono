@@ -1,5 +1,8 @@
 package com.davidparkeredwards.fono.data;
 
+import android.content.ContentResolver;
+import android.content.ContentUris;
+import android.net.Uri;
 import android.provider.BaseColumns;
 
 /**
@@ -7,18 +10,36 @@ import android.provider.BaseColumns;
  */
 public class EventsContract {
 
+    public static final String CONTENT_AUTHORITY = "com.davidparkeredwards.fono";
+    public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
+    public static final String PATH_EVENTS = "events";
+
     public static final class EventEntry implements BaseColumns {
-        public static final String TABLE_NAME = "events";
+
+        public static final Uri CONTENT_URI =
+                BASE_CONTENT_URI.buildUpon().appendPath(PATH_EVENTS).build();
+
+        public static final String CONTENT_TYPE =
+                ContentResolver.CURSOR_DIR_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_EVENTS;
+
+        public static final String CONTENT_ITEM_TYPE =
+                ContentResolver.CURSOR_ITEM_BASE_TYPE + "/" + CONTENT_AUTHORITY + "/" + PATH_EVENTS;
+
+        public static final String TABLE_NAME = "EVENTS";
 
         //All columns presently String type
-        public static final String COLUMN_REQUEST_COORDINATES = "request_coordinates";
-        public static final String COLUMN_LOCATION_COORDINATES = "location_coordinates";
-        public static final String COLUMN_NAME = "name";
-        public static final String COLUMN_VENUE_NAME = "venue_name";
-        public static final String COLUMN_ADDRESS = "address";
-        public static final String COLUMN_DESCRIPTION = "description";
-        public static final String COLUMN_CATEGORY = "category";
-        public static final String COLUMN_LINK_TO_ORIGIN = "link_to_origin";
-        public static final String COLUMN_DOWNLOAD_DATE = "download_date";
+        public static final String COLUMN_REQUEST_COORDINATES = "REQUEST_COORDINATES";
+        public static final String COLUMN_LOCATION_COORDINATES = "LOCATION_COORDINATES";
+        public static final String COLUMN_NAME = "NAME";
+        public static final String COLUMN_VENUE_NAME = "VENUE_NAME";
+        public static final String COLUMN_ADDRESS = "ADDRESS";
+        public static final String COLUMN_DESCRIPTION = "DESCRIPTION";
+        public static final String COLUMN_CATEGORY = "CATEGORY";
+        public static final String COLUMN_LINK_TO_ORIGIN = "LINK_TO_ORIGIN";
+        public static final String COLUMN_DOWNLOAD_DATE = "DOWNLOAD_DATE";
+
+        public static Uri buildEventsUri(long id) {
+            return ContentUris.withAppendedId(CONTENT_URI, id);
+        }
     }
 }

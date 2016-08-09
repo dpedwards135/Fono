@@ -8,6 +8,23 @@ public class FonoEvent {
     String name;
     String date;
     String venueName;
+    String address;
+    String description;
+    String category;
+    String linkToOrigin;
+    int id;
+
+
+    public FonoEvent(String name, String date, String venueName, String address, String description, String category, String linkToOrigin, int id) {
+        this.name = name;
+        this.date = date;
+        this.venueName = venueName;
+        this.address = address;
+        this.description = description;
+        this.category = category;
+        this.linkToOrigin = linkToOrigin;
+        this.id = id;
+    }
 
     public String getName() {
         return name;
@@ -65,21 +82,8 @@ public class FonoEvent {
         this.linkToOrigin = linkToOrigin;
     }
 
-    String address;
-    String description;
-    String category;
-    String linkToOrigin;
-    int id;
-
-    public FonoEvent(String name, String date, String venueName, String address, String description, String category, String linkToOrigin, int id) {
-        this.name = name;
-        this.date = date;
-        this.venueName = venueName;
-        this.address = address;
-        this.description = description;
-        this.category = category;
-        this.linkToOrigin = linkToOrigin;
-        this.id = id;
+    public int getId() {
+        return id;
     }
 
     public String toString() {

@@ -39,6 +39,8 @@ import java.util.List;
 public class EventRequest extends AsyncTask<String, Void, String> {
 
     String centerLocation;
+    private static final int EVENTS_LOADER = 0;
+    //private EventsAdapter eventsAdapter;
 
     ArrayAdapter<FonoEvent> eventsListAdapter;
     private Context context;
@@ -59,10 +61,6 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             List<FonoEvent> eventsList = parseJsonString(jsonString);
             EventDbManager dbManager = new EventDbManager(context);
             dbManager.createDbTable(eventsList, centerLocation);
-            //Steps: create DB if not created, this should just happen once.
-            //     : delete all the records from previous query
-            //     : save all records from current query
-            //     : access records to populate fields
 
             updateListView();
 
@@ -76,11 +74,11 @@ public class EventRequest extends AsyncTask<String, Void, String> {
 
     @Override
     protected String doInBackground(String... params) {
-        Log.i("Event Request", "doInBackground: Starting Do In Background");
+        //Log.i("Event Request", "doInBackground: Starting Do In Background");
         String coordinates = params[0];
-        Log.i("Event Request", "doInBackground: Coordinates" + coordinates);
+        //Log.i("Event Request", "doInBackground: Coordinates" + coordinates);
         String jsonString = getJsonString(coordinates);
-        Log.i("Event Request", "doInBackground: jsonString = " + jsonString);
+        //Log.i("Event Request", "doInBackground: jsonString = " + jsonString);
         return jsonString;
     }
 
@@ -142,7 +140,7 @@ public class EventRequest extends AsyncTask<String, Void, String> {
                 }
             }
         }
-        Log.i("Background", "doInBackground: " + eventsJsonStr);
+        //Log.i("Background", "doInBackground: " + eventsJsonStr);
         return eventsJsonStr;
     }
 
@@ -154,7 +152,7 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             JSONObject eventString = eventfulString.getJSONObject("events");
             JSONArray events = eventString.getJSONArray("event");
             JSONObject checkEvent = events.getJSONObject(0);
-            Log.i("Check Parsed Object", "parseJson: " + checkEvent.toString());
+            //Log.i("Check Parsed Object", "parseJson: " + checkEvent.toString());
             for (int i = 0; i < events.length(); i++) {
                 JSONObject jsonEvent = events.getJSONObject(i);
 
@@ -163,12 +161,25 @@ public class EventRequest extends AsyncTask<String, Void, String> {
                 String venueName = jsonEvent.getString("venue_name");
                 String address = jsonEvent.getString("venue_address") + ", " + jsonEvent.getString("city_name") + ", " + jsonEvent.getString("region_name");
                 String description = jsonEvent.getString("description");
-                String category = jsonEvent.getString("categories");
+                String category = "";
+
+                ///Parse Category
+                JSONObject categoriesObject = jsonEvent.getJSONObject("categories");
+
+                JSONArray categoryArray = categoriesObject.getJSONArray("category");
+
+                for (int l = 0; l<categoryArray.length(); l++) {
+                    JSONObject categoryObject = categoryArray.getJSONObject(l);
+
+                    category = category + categoryObject.getString("name");
+                }
+                ///End Parse Category
+
                 String linkToOrigin = jsonEvent.getString("url");
                 int id = 0;
 
                 FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin, id);
-                Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
+                //Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
                 eventsList.add(newFonoEvent);
 
             }
@@ -187,24 +198,27 @@ public class EventRequest extends AsyncTask<String, Void, String> {
 
         while (cursor.moveToNext()) {
 
-            Log.i("getEventsList", "readValues: " + cursor.getString(0) + cursor.getString(1) + cursor.getString(2));
+            //Log.i("getEventsList", "readValues: " + cursor.getString(0) + cursor.getString(1) + cursor.getString(2));
             String detailName = cursor.getString(0);
             String detailVenueName = cursor.getString(1);
             int id = cursor.getInt(2);
+            //Log.i("Check ID", "getEventsList: " + id);
 
             FonoEvent newEvent = new FonoEvent(detailName, null, detailVenueName, null, null, null, null, id);
 
             eventsList.add(newEvent);
-            Log.i("Check Events List", "getEventsList: " + eventsList.toString());
+            //Log.i("Check Events List", "getEventsList: " + eventsList.toString());
 
         }
 
+        cursor.close();
         return eventsList;
+
     }
 
     public void updateListView() {
 
-        List<FonoEvent> eventsList = getEventsList();
+        final List<FonoEvent> eventsList = getEventsList();
 
         eventsListAdapter = new ArrayAdapter<FonoEvent>(
                 context, //getActivity() if in fragment
@@ -219,12 +233,17 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
 
+                int newID = eventsList.get(position).getId();
+
+                Log.i("Getting ID", "onItemClick: " + newID);
                 Intent intent = new Intent(context,EventDetail.class)
-                        .putExtra("Record ID", id);
+                        .putExtra("Record ID", newID);
                 context.startActivity(intent);
 
             }
         });
     }
+
+
 }
 

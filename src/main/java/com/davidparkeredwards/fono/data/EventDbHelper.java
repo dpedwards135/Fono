@@ -21,16 +21,18 @@ public class EventDbHelper extends SQLiteOpenHelper{
 
     public void onCreate(SQLiteDatabase sqLiteDatabase) {
         Log.i("onCreate", "onCreate: Attempting to create database");
-        final String SQL_CREATE_EVENTS_TABLE = "CREATE TABLE EVENTS (_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + "NAME TEXT, "
-                + "DESCRIPTION TEXT, "
-                + "REQUEST_COORDINATES TEXT, "
-                + "LOCATION_COORDINATES TEXT, "
-                + "VENUE_NAME TEXT, "
-                + "ADDRESS TEXT, "
-                + "CATEGORY TEXT, "
-                + "LINK_TO_ORIGIN TEXT, "
-                + "DOWNLOAD_DATE TEXT);";
+        final String SQL_CREATE_EVENTS_TABLE = "CREATE TABLE " + EventsContract.EventEntry.TABLE_NAME
+                + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, "
+                + EventsContract.EventEntry.COLUMN_NAME + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_DESCRIPTION + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_VENUE_NAME + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_ADDRESS + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_CATEGORY + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN + " TEXT, "
+                + EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE + " TEXT); ";
+
         sqLiteDatabase.execSQL(SQL_CREATE_EVENTS_TABLE);
     }
 
