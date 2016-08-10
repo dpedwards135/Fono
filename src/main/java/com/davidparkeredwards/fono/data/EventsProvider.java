@@ -10,6 +10,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
 import android.support.annotation.Nullable;
+import android.util.Log;
 
 /**
  * Created by User on 8/8/2016.
@@ -23,6 +24,7 @@ public class EventsProvider extends ContentProvider {
     private EventDbHelper mOpenHelper;
 
     static final int EVENTS = 100;
+    static final int EVENTS_WITH_ID = 101;
 
     private static final SQLiteQueryBuilder sEventsQueryBuilder;
 
@@ -33,6 +35,36 @@ public class EventsProvider extends ContentProvider {
         );
     }
 
+    private static final String eventsById =
+            EventsContract.EventEntry.TABLE_NAME+
+             "." + EventsContract.EventEntry._ID + " = ? ";
+
+    //
+
+
+    private Cursor getEventsById(Uri uri, String[] projection, String sortOrder) {
+        long eventId = EventsContract.EventEntry.getIdFromUri(uri);
+        String[] selectionArgs;
+        String selection;
+
+
+        if (eventId == 0) {
+            selection = null;
+            selectionArgs = null;
+        } else {
+            selection = eventsById;
+            selectionArgs = new String[] {Long.toString(eventId)};
+        }
+
+        return sEventsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
+                projection,
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null //sortOrder
+        );
+    }
     private Cursor getEvents(Uri uri, String[] projection, String sortOrder) {
 
 
@@ -52,6 +84,7 @@ public class EventsProvider extends ContentProvider {
         final String authority = EventsContract.CONTENT_AUTHORITY;
 
         matcher.addURI(authority, EventsContract.PATH_EVENTS, EVENTS);
+        matcher.addURI(authority, EventsContract.PATH_EVENTS + "/#", EVENTS_WITH_ID);
 
         return matcher;
     }
@@ -71,6 +104,8 @@ public class EventsProvider extends ContentProvider {
         switch(match) {
             case EVENTS:
                 return EventsContract.EventEntry.CONTENT_TYPE;
+            case EVENTS_WITH_ID:
+                return EventsContract.EventEntry.CONTENT_ITEM_TYPE;
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);
         }
@@ -81,10 +116,19 @@ public class EventsProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
+        Log.i("Events Provider Query", "query: " + uri.toString());
         Cursor retCursor;
         switch (sUriMatcher.match(uri)) {
             case EVENTS: {
-                retCursor = null;
+                Log.i("Case: Events", "query: ");
+                retCursor = getEvents(uri, projection, sortOrder);
+
+                break;
+            }
+            case EVENTS_WITH_ID: {
+                Log.i("Case: EventsWithId", "query: ");
+                retCursor = getEventsById(uri, projection, sortOrder);
+
                 break;
             }
             default: {
@@ -106,7 +150,7 @@ public class EventsProvider extends ContentProvider {
             case EVENTS: {
                 long _id = db.insert(EventsContract.EventEntry.TABLE_NAME, null, values);
                 if (_id > 0)
-                    returnUri = EventsContract.EventEntry.buildEventsUri(_id);
+                    returnUri = EventsContract.EventEntry.buildEventsUriWithId(_id);
                 else
                     throw new android.database.SQLException("Failed to insert row into " + uri);
                 break;

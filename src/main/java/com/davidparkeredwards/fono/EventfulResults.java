@@ -1,6 +1,7 @@
 package com.davidparkeredwards.fono;
 
 import android.content.Intent;
+import android.content.Loader;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
@@ -20,6 +21,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davidparkeredwards.fono.data.EventDbHelper;
+import com.davidparkeredwards.fono.sync.FonoSyncAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -43,18 +45,33 @@ import java.util.Objects;
 
 public class EventfulResults extends AppCompatActivity {
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
         Log.e("OnCreateEventfulResults", "Created");
+        FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
+        fonoSyncAdapter.syncImmediately(this);
+
         setContentView(R.layout.activity_eventful_results);
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().add(R.id.container, new ResultsFragment()).commit();
+        }
+        /*
         String locCoordinates = getIntent().getStringExtra("loccoordinates");
-        ListView listView = (ListView) findViewById(R.id.main_list_view);
+        listView = (ListView) findViewById(R.id.main_list_view);
         AsyncTask<String, Void, String> setDisplay = new EventRequest(this, locCoordinates, listView)
                 .execute(locCoordinates);
 
-        Log.i("End", "onCreate: " + setDisplay);
+        eventsAdapter = new EventsAdapter(this, null, 0);
+        listView.setAdapter(eventsAdapter);
+
+        */
+
 
     }
+
+
 }

@@ -3,6 +3,38 @@
     package="com.davidparkeredwards.fono">
 
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <!-- Permissions required by the sync adapter -->
+    <uses-permission
+        android:name="android.permission.READ_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.WRITE_SYNC_SETTINGS"/>
+    <uses-permission
+        android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
+
+    <!-- SyncAdapter's dummy authentication service -->
+    <service
+        android:name=".sync.FonoAuthenticatorService"
+        >
+        <intent-filter>
+            <action android:name="android.accounts.AccountAuthenticator" />
+        </intent-filter>
+        <meta-data
+            android:name="android.accounts.AccountAuthenticator"
+            android:resource="@xml/authenticator" />
+    </service>
+
+    <!-- The SyncAdapter service -->
+    <service
+        android:name=".sync.FonoSyncService"
+        android:exported="true"
+        >
+        <intent-filter>
+            <action android:name="android.content.SyncAdapter" />
+        </intent-filter>
+        <meta-data
+            android:name="android.content.SyncAdapter"
+            android:resource="@xml/syncadapter" />
+    </service>
 
 
 
@@ -23,8 +55,9 @@
         <activity android:name=".EventDetail"></activity>
         <provider
             android:name=".data.EventsProvider"
-            android:authorities="com.davidparkeredwards.fono"
-            />
+            android:authorities="@string/content_authority"
+            android:syncable="true"
+            android:exported="false" />
 
     </application>
 

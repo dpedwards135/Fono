@@ -4,6 +4,7 @@ import android.content.ContentResolver;
 import android.content.ContentUris;
 import android.net.Uri;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 /**
  * Created by User on 7/30/2016.
@@ -38,8 +39,17 @@ public class EventsContract {
         public static final String COLUMN_LINK_TO_ORIGIN = "LINK_TO_ORIGIN";
         public static final String COLUMN_DOWNLOAD_DATE = "DOWNLOAD_DATE";
 
-        public static Uri buildEventsUri(long id) {
+        public static Uri buildEventsUriWithId(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
         }
+
+        public static long getIdFromUri(Uri uri) {
+            long id = Long.parseLong(uri.getPathSegments().get(1));
+            Log.i("getIdFromUri", "getIdFromUri: " + id);
+            return id;
+        }
+
+
+
     }
 }

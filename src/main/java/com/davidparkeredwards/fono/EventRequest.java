@@ -30,91 +30,83 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by User on 7/31/2016.
- *
- * Ultimate objective of EventRequest is to return a list of events, so that we can use it
- * for both home (auto) and search. Though with search it has to be saved to DB anyway for persistence,
- * so I guess it can go both ways, but let's create a separate DB creation/update anyway.
+ * I need to change this class so that all it does is update the database
+ * and then do all the event loading on the pertinent activity/fragment.
  */
 public class EventRequest extends AsyncTask<String, Void, String> {
 
     String centerLocation;
-    private static final int EVENTS_LOADER = 0;
-    //private EventsAdapter eventsAdapter;
-
-    ArrayAdapter<FonoEvent> eventsListAdapter;
     private Context context;
-    ListView listView;
+
 
 
     public EventRequest(Context context, String loccoordinates, ListView listView) {
         this.centerLocation = loccoordinates;
         this.context = context;
-        this.listView = listView;
     }
-    //Steps: 1. get a JSON String from API; 2. transform JSON String into List
 
     @Override
     protected void onPostExecute(String jsonString) {
         super.onPostExecute(jsonString);
-        try {
+       // try {
+            Log.i("Check JSON String", "onPostExecute: " + jsonString);
+
+            /*
             List<FonoEvent> eventsList = parseJsonString(jsonString);
             EventDbManager dbManager = new EventDbManager(context);
             dbManager.createDbTable(eventsList, centerLocation);
 
-            updateListView();
 
         } catch(JSONException e) {
             Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
         }
-
+        */
     }
 
 
 
     @Override
     protected String doInBackground(String... params) {
-        //Log.i("Event Request", "doInBackground: Starting Do In Background");
         String coordinates = params[0];
-        //Log.i("Event Request", "doInBackground: Coordinates" + coordinates);
         String jsonString = getJsonString(coordinates);
-        //Log.i("Event Request", "doInBackground: jsonString = " + jsonString);
+        try {
+            List<FonoEvent> eventsList = parseJsonString(jsonString);
+            EventDbManager dbManager = new EventDbManager(context);
+            dbManager.createDbTable(eventsList, centerLocation);
+
+
+        } catch(JSONException e) {
+            Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
+        }
+
         return jsonString;
+
+
     }
 
     public String getJsonString(String coordinates) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
-        // Will contain the raw JSON response as a string.
         String eventsJsonStr = null;
 
         try {
-            // Construct the URL for the OpenWeatherMap query
-            // Possible parameters are avaiable at OWM's forecast API page, at
-            // http://openweathermap.org/API#forecast
             URL url = new URL("http://api.eventful.com/json/events/search?...&where="
                     + coordinates + "&within=25&date=Today&app_key=w732ztLVhvrG9DN8&include=categories"
                     + "&page_size=1000");
             Log.i("URL", "doInBackground: " + url);
-            // Create the request to OpenWeatherMap, and open the connection
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
 
-            // Read the input stream into a String
             InputStream inputStream = urlConnection.getInputStream();
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
-                // Nothing to do.
                 return null;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
             String line;
             while ((line = reader.readLine()) != null) {
-                // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                // But it does make debugging a *lot* easier if you print out the completed
-                // buffer for debugging.
                 buffer.append(line + "\n");
             }
 
@@ -125,8 +117,6 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             eventsJsonStr = buffer.toString();
         } catch (IOException e) {
             Log.e("PlaceholderFragment", "Error ", e);
-            // If the code didn't successfully get the weather data, there's no point in attemping
-            // to parse it.
             return null;
         } finally {
             if (urlConnection != null) {
@@ -152,7 +142,6 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             JSONObject eventString = eventfulString.getJSONObject("events");
             JSONArray events = eventString.getJSONArray("event");
             JSONObject checkEvent = events.getJSONObject(0);
-            //Log.i("Check Parsed Object", "parseJson: " + checkEvent.toString());
             for (int i = 0; i < events.length(); i++) {
                 JSONObject jsonEvent = events.getJSONObject(i);
 
@@ -165,85 +154,22 @@ public class EventRequest extends AsyncTask<String, Void, String> {
 
                 ///Parse Category
                 JSONObject categoriesObject = jsonEvent.getJSONObject("categories");
-
                 JSONArray categoryArray = categoriesObject.getJSONArray("category");
-
                 for (int l = 0; l<categoryArray.length(); l++) {
                     JSONObject categoryObject = categoryArray.getJSONObject(l);
-
-                    category = category + categoryObject.getString("name");
+               category = category + categoryObject.getString("name");
                 }
-                ///End Parse Category
 
                 String linkToOrigin = jsonEvent.getString("url");
                 int id = 0;
 
                 FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin, id);
-                //Log.i("New FonoEvent", "parseJson: " + newFonoEvent.toString());
                 eventsList.add(newFonoEvent);
 
             }
             return eventsList;
 
         }
-
-    public List getEventsList() {
-        List<FonoEvent> eventsList = new ArrayList();
-
-        EventDbHelper eventDbHelper = new EventDbHelper(context);
-        SQLiteDatabase db = eventDbHelper.getReadableDatabase();
-        Cursor cursor = db.query("EVENTS",
-                new String[] {"NAME", "VENUE_NAME", "_id"},
-                null,null,null,null,null);
-
-        while (cursor.moveToNext()) {
-
-            //Log.i("getEventsList", "readValues: " + cursor.getString(0) + cursor.getString(1) + cursor.getString(2));
-            String detailName = cursor.getString(0);
-            String detailVenueName = cursor.getString(1);
-            int id = cursor.getInt(2);
-            //Log.i("Check ID", "getEventsList: " + id);
-
-            FonoEvent newEvent = new FonoEvent(detailName, null, detailVenueName, null, null, null, null, id);
-
-            eventsList.add(newEvent);
-            //Log.i("Check Events List", "getEventsList: " + eventsList.toString());
-
-        }
-
-        cursor.close();
-        return eventsList;
-
-    }
-
-    public void updateListView() {
-
-        final List<FonoEvent> eventsList = getEventsList();
-
-        eventsListAdapter = new ArrayAdapter<FonoEvent>(
-                context, //getActivity() if in fragment
-                R.layout.list_item_events,
-                R.id.list_item_events_textview,
-                eventsList);
-
-        //ListView listView = (ListView) findViewById(R.id.main_list_view);//Pass proper view in with constructor
-        listView.setAdapter(eventsListAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener(){
-
-            @Override
-            public void onItemClick(AdapterView<?> adapterView, View view, int position, long id) {
-
-                int newID = eventsList.get(position).getId();
-
-                Log.i("Getting ID", "onItemClick: " + newID);
-                Intent intent = new Intent(context,EventDetail.class)
-                        .putExtra("Record ID", newID);
-                context.startActivity(intent);
-
-            }
-        });
-    }
-
 
 }
 

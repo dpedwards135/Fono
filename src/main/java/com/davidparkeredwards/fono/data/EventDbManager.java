@@ -132,6 +132,7 @@ public class EventDbManager {
             ContentValues[] cvArray = new ContentValues[cVVector.size()];
             cVVector.toArray(cvArray);
             context.getContentResolver().bulkInsert(EventsContract.EventEntry.CONTENT_URI, cvArray);
+            Log.i("Bulk Insert", "bulkInsert: New Values Inserted");
         }
 
     }

@@ -20,10 +20,8 @@ public class EventsAdapter extends CursorAdapter {
     }
 
     private String convertCursorRowToUxFormat(Cursor cursor) {
-        int idx_name = cursor.getColumnIndex(EventsContract.EventEntry.COLUMN_NAME);
-        int idx_description = cursor.getColumnIndex(EventsContract.EventEntry.COLUMN_DESCRIPTION);
 
-        return cursor.getString(idx_name) + "\n" + cursor.getString(idx_description);
+        return cursor.getString(ResultsFragment.COL_NAME) + "\n" + cursor.getString(ResultsFragment.COL_VENUE_NAME);
     }
 
     @Override
