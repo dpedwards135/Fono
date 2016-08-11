@@ -10,6 +10,8 @@ import android.content.SyncResult;
 import android.os.Bundle;
 import android.util.Log;
 
+import com.davidparkeredwards.fono.EventRequest;
+import com.davidparkeredwards.fono.FONO;
 import com.davidparkeredwards.fono.R;
 
 /**
@@ -24,8 +26,9 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
 
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
-        Log.d(LOG_TAG, "onPerformSync Called.");
 
+        EventRequest eventRequest = new EventRequest(FONO.getContext());
+        eventRequest.execute();
     }
 
     /**
@@ -38,6 +41,7 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
         bundle.putBoolean(ContentResolver.SYNC_EXTRAS_MANUAL, true);
         ContentResolver.requestSync(getSyncAccount(context),
                 context.getString(R.string.content_authority), bundle);
+
     }
 
     /**

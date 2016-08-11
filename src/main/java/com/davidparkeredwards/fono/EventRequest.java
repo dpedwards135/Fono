@@ -2,19 +2,27 @@ package com.davidparkeredwards.fono;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.location.Location;
 import android.os.AsyncTask;
+import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbHelper;
 import com.davidparkeredwards.fono.data.EventDbManager;
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -33,55 +41,56 @@ import java.util.List;
  * I need to change this class so that all it does is update the database
  * and then do all the event loading on the pertinent activity/fragment.
  */
-public class EventRequest extends AsyncTask<String, Void, String> {
+public class EventRequest extends AsyncTask<Void, Void, Void> {
 
-    String centerLocation;
+
+
+    //1. Get Center Location, 2. Pull events, 3. Update content provider
+
     private Context context;
+    String coordinates;
 
 
 
-    public EventRequest(Context context, String loccoordinates, ListView listView) {
-        this.centerLocation = loccoordinates;
+    public EventRequest(Context context) {
         this.context = context;
     }
 
+
     @Override
-    protected void onPostExecute(String jsonString) {
-        super.onPostExecute(jsonString);
+    protected void onPostExecute(Void aVoid) {
+        super.onPostExecute(aVoid);
        // try {
-            Log.i("Check JSON String", "onPostExecute: " + jsonString);
+            Log.i("Check JSON String", "onPostExecute: ");
 
-            /*
-            List<FonoEvent> eventsList = parseJsonString(jsonString);
-            EventDbManager dbManager = new EventDbManager(context);
-            dbManager.createDbTable(eventsList, centerLocation);
-
-
-        } catch(JSONException e) {
-            Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
-        }
-        */
     }
 
 
 
     @Override
-    protected String doInBackground(String... params) {
-        String coordinates = params[0];
+    protected Void doInBackground(Void... params) {
+
+        LocationIdentifier locationIdentifier = new LocationIdentifier();
+        locationIdentifier.openConnection();
+        int ms = 0;
+        while (coordinates == null) {
+            ms += 1;
+        }
+        Log.i("Do In Background", "MS to return location: " + ms);
+        Log.i("Background", "doInBackground: " + coordinates);
         String jsonString = getJsonString(coordinates);
+        Log.i("Check JSON", "doInBackground: " + jsonString);
         try {
             List<FonoEvent> eventsList = parseJsonString(jsonString);
             EventDbManager dbManager = new EventDbManager(context);
-            dbManager.createDbTable(eventsList, centerLocation);
+            dbManager.createDbTable(eventsList, coordinates);
 
 
         } catch(JSONException e) {
             Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
         }
 
-        return jsonString;
-
-
+        return null;
     }
 
     public String getJsonString(String coordinates) {
@@ -92,7 +101,7 @@ public class EventRequest extends AsyncTask<String, Void, String> {
         try {
             URL url = new URL("http://api.eventful.com/json/events/search?...&where="
                     + coordinates + "&within=25&date=Today&app_key=w732ztLVhvrG9DN8&include=categories"
-                    + "&page_size=1000");
+                    + "&page_size=100");
             Log.i("URL", "doInBackground: " + url);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -170,6 +179,68 @@ public class EventRequest extends AsyncTask<String, Void, String> {
             return eventsList;
 
         }
+
+             protected class LocationIdentifier implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
+
+
+                 GoogleApiClient mGoogleApiClient;
+                 PackageManager packageManager;
+                 int hasPermission;
+                 Location mLastLocation;
+
+
+                 public Void openConnection() {
+
+                     packageManager = context.getPackageManager();
+                     if (mGoogleApiClient == null) {
+                         Log.i("Get centerLocation", "onCreate: Launching builder");
+                         mGoogleApiClient = new GoogleApiClient.Builder(context)
+
+                                 .addConnectionCallbacks(this)
+
+                                 .addOnConnectionFailedListener(this)
+                                 .addApi(LocationServices.API)
+                                 .build();
+                     }
+                     mGoogleApiClient.connect();
+
+                    return null;
+                 }
+
+                 @Override
+                 public void onConnectionSuspended(int i) {
+
+                 }
+
+
+                 @Override
+                 public void onConnected(Bundle connectionHint) {
+                    String newCenterLocation = "";
+                     Log.i("onConnected", "onConnected: Connecting ");
+
+                     hasPermission = packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "com.davidparkeredwards.fono");
+                     Log.i("onConnected", "onConnected: " + hasPermission);
+                     if (hasPermission == packageManager.PERMISSION_GRANTED) {
+                         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                         Log.i("onConnected", "onConnected: Permission passed");
+                         if (mLastLocation != null) {
+                             Log.i("Last Location", String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()));
+                             newCenterLocation = String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude());
+                             coordinates = newCenterLocation;
+                         }
+                         Log.i("Location Info", "Current location: " + newCenterLocation);
+
+                         mGoogleApiClient.disconnect();
+                     }
+
+                 }
+
+                 @Override
+                 public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
+
+                 }
+
+             }
 
 }
 

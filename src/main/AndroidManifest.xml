@@ -11,34 +11,9 @@
     <uses-permission
         android:name="android.permission.AUTHENTICATE_ACCOUNTS"/>
 
-    <!-- SyncAdapter's dummy authentication service -->
-    <service
-        android:name=".sync.FonoAuthenticatorService"
-        >
-        <intent-filter>
-            <action android:name="android.accounts.AccountAuthenticator" />
-        </intent-filter>
-        <meta-data
-            android:name="android.accounts.AccountAuthenticator"
-            android:resource="@xml/authenticator" />
-    </service>
-
-    <!-- The SyncAdapter service -->
-    <service
-        android:name=".sync.FonoSyncService"
-        android:exported="true"
-        >
-        <intent-filter>
-            <action android:name="android.content.SyncAdapter" />
-        </intent-filter>
-        <meta-data
-            android:name="android.content.SyncAdapter"
-            android:resource="@xml/syncadapter" />
-    </service>
-
-
 
     <application
+        android:name = "com.davidparkeredwards.fono.FONO"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -54,11 +29,36 @@
         <activity android:name=".EventfulResults" />
         <activity android:name=".EventDetail"></activity>
         <provider
-            android:name=".data.EventsProvider"
             android:authorities="@string/content_authority"
-            android:syncable="true"
-            android:exported="false" />
+            android:name=".data.EventsProvider"
+            android:exported="false"
+            android:syncable="true" />
 
+
+        <!-- SyncAdapter's dummy authentication service -->
+        <service
+            android:name=".sync.FonoAuthenticatorService"
+            >
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+        <!-- The SyncAdapter service -->
+        <service
+            android:name=".sync.FonoSyncService"
+            android:exported="true"
+            >
+            <intent-filter>
+                <action android:name="android.content.SyncAdapter" />
+            </intent-filter>
+            <meta-data
+                android:name="android.content.SyncAdapter"
+                android:resource="@xml/syncadapter" />
+        </service>
     </application>
 
 </manifest>

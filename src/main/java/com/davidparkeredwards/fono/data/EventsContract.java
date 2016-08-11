@@ -6,12 +6,14 @@ import android.net.Uri;
 import android.provider.BaseColumns;
 import android.util.Log;
 
+import com.davidparkeredwards.fono.R;
+
 /**
  * Created by User on 7/30/2016.
  */
 public class EventsContract {
 
-    public static final String CONTENT_AUTHORITY = "com.davidparkeredwards.fono";
+    public static final String CONTENT_AUTHORITY = "com.davidparkeredwards.com";
     public static final Uri BASE_CONTENT_URI = Uri.parse("content://" + CONTENT_AUTHORITY);
     public static final String PATH_EVENTS = "events";
 
