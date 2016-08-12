@@ -42,7 +42,10 @@ public class MainActivity extends AppCompatActivity  {
         //EventRequest newEventRequest = new EventRequest(this);
         //newEventRequest.execute();
         FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
+        fonoSyncAdapter.initializeSyncAdapter(this);
         fonoSyncAdapter.syncImmediately(this);
+
+
     }
 
 

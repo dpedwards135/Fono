@@ -2,6 +2,7 @@ package com.davidparkeredwards.fono;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -10,6 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
@@ -20,8 +22,10 @@ import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbHelper;
 import com.davidparkeredwards.fono.data.EventDbManager;
+import com.davidparkeredwards.fono.data.SharedPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.drive.query.internal.LogicalFilter;
 import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONArray;
@@ -29,13 +33,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.prefs.PreferenceChangeListener;
 
 /**
  * I need to change this class so that all it does is update the database
@@ -43,25 +50,19 @@ import java.util.List;
  */
 public class EventRequest extends AsyncTask<Void, Void, Void> {
 
-
-
     //1. Get Center Location, 2. Pull events, 3. Update content provider
-
     private Context context;
     String coordinates;
-
-
 
     public EventRequest(Context context) {
         this.context = context;
     }
 
-
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
-       // try {
-            Log.i("Check JSON String", "onPostExecute: ");
+
+        Log.i("Event Request", "Event Request Background thread complete");
 
     }
 
@@ -70,38 +71,93 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     @Override
     protected Void doInBackground(Void... params) {
 
+        //Check if sync is needed: Has date or location changed since last sync?
+        SharedPreference sharedPreference = new SharedPreference();
+        Log.i("SPCheck", "doInBackground: " +sharedPreference.getValue(context, SharedPreference.PREFS_LOCATION_KEY));
+        String oldCoordinates = sharedPreference.getValue(context, SharedPreference.PREFS_LOCATION_KEY);
+        String oldDate = sharedPreference.getValue(context, SharedPreference.PREFS_SYNC_DATE_KEY);
+        Date today = new Date();
+        String date =
+                Integer.toString(today.getMonth()) +
+                        Integer.toString(today.getDate()) +
+                        Integer.toString(today.getHours());
+        Log.i("Change Preferences", "doInBackground: " + oldCoordinates + ", " + date + ", " + oldDate);
         LocationIdentifier locationIdentifier = new LocationIdentifier();
         locationIdentifier.openConnection();
         int ms = 0;
-        while (coordinates == null) {
-            ms += 1;
-        }
+        while (coordinates == null) {ms += 1;}
         Log.i("Do In Background", "MS to return location: " + ms);
         Log.i("Background", "doInBackground: " + coordinates);
-        String jsonString = getJsonString(coordinates);
-        Log.i("Check JSON", "doInBackground: " + jsonString);
-        try {
-            List<FonoEvent> eventsList = parseJsonString(jsonString);
-            EventDbManager dbManager = new EventDbManager(context);
-            dbManager.createDbTable(eventsList, coordinates);
+
+        //If nothing has changed since last sync, no sync, return
+
+        if (coordinates.equals(oldCoordinates) && date.equals(oldDate)) {
+            Log.i("Run Sync?", "Coordinates and date have not changed. Do not run sync.");
+            return null;
+        //If date or location has changed since last sync, continue with sync
+        } else {
+            Log.i("Run Sync?", "Coordinates and date have changed. Run sync.");
+            //Save new coordinates and date to sharedPreferences
+            sharedPreference.save(context,coordinates,SharedPreference.PREFS_LOCATION_KEY);
+            sharedPreference.save(context,date,SharedPreference.PREFS_SYNC_DATE_KEY);
+
+            //Pull JSON string from Eventful API and attempt to parse and save to DB
+            try {
+                double totalPages = 1;
+                double parsedPages = 0;
+                List<FonoEvent> eventsList = new ArrayList<>();
+                while (parsedPages < totalPages) {
+                    String jsonString = getJsonString(coordinates,parsedPages+1);
+                    Log.i("JSON Parse Loop", "jsonString readout: " + jsonString);
+                    totalPages = getTotalPages(jsonString);
+                    eventsList.addAll(parseJsonString(jsonString));
+                    parsedPages +=1;
+                    Log.i("JSON Parse Loop", "Cycle: " + parsedPages + ", " + totalPages);
+                    Log.i("JSON Parse Loop", "Events in eventsList: "+eventsList.size());
+                }
+                EventDbManager dbManager = new EventDbManager(context);
+                dbManager.createDbTable(eventsList, coordinates);
 
 
-        } catch(JSONException e) {
-            Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
+
+            } catch (JSONException e) {
+                Log.i("OnPostExecute", "onPostExecute: Unable to parse JSON string");
+            }
+
+            return null;
         }
-
-        return null;
     }
 
-    public String getJsonString(String coordinates) {
+    public double getTotalPages(String jsonString)
+        throws JSONException {
+
+        double totalPages;
+        JSONObject eventfulString = new JSONObject(jsonString);
+        double totalItems = Integer.valueOf(eventfulString.getString("total_items"));
+        double pageSize = Integer.valueOf(eventfulString.getString("page_size"));
+        totalPages = Math.ceil(totalItems/pageSize);
+        Log.i("Check getTotal Pages", totalItems + ", " + pageSize);
+
+
+            return totalPages;
+    }
+
+
+    public String getJsonString(String coordinates, double pageNumber) {
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String eventsJsonStr = null;
+        String pageNumberString = Double.toString(pageNumber);
 
         try {
-            URL url = new URL("http://api.eventful.com/json/events/search?...&where="
-                    + coordinates + "&within=25&date=Today&app_key=w732ztLVhvrG9DN8&include=categories"
-                    + "&page_size=100");
+            URL url = new URL("http://api.eventful.com/json/events/search?..." +
+                    "&where=" + coordinates +
+                    "&within=25" +
+                    "&date=Today" +
+                    "&app_key=w732ztLVhvrG9DN8" +
+                    "&include=categories" +
+                    "&page_size=100" +
+                    "&page_number=" + pageNumberString);
             Log.i("URL", "doInBackground: " + url);
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
@@ -125,7 +181,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
             }
             eventsJsonStr = buffer.toString();
         } catch (IOException e) {
-            Log.e("PlaceholderFragment", "Error ", e);
+            Log.e("Event Request", "Error ", e);
             return null;
         } finally {
             if (urlConnection != null) {
@@ -135,11 +191,11 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 try {
                     reader.close();
                 } catch (final IOException e) {
-                    Log.e("PlaceholderFragment", "Error closing stream", e);
+                    Log.e("Event Request", "Error closing stream", e);
                 }
             }
         }
-        //Log.i("Background", "doInBackground: " + eventsJsonStr);
+
         return eventsJsonStr;
     }
 
