@@ -25,8 +25,6 @@ import com.davidparkeredwards.fono.data.EventsContract;
 
 public class DetailFragment extends Fragment implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor> {
 
-    private ShareActionProvider shareActionProvider;
-    private String events;
 
     private static final int DETAIL_LOADER = 0;
 
@@ -37,10 +35,13 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
             EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
             EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
             EventsContract.EventEntry.COLUMN_ADDRESS,
-            EventsContract.EventEntry.COLUMN_CATEGORY,
+            EventsContract.EventEntry.COLUMN_CATEGORY_1,
+            EventsContract.EventEntry.COLUMN_CATEGORY_2,
+            EventsContract.EventEntry.COLUMN_CATEGORY_3,
             EventsContract.EventEntry.COLUMN_DESCRIPTION,
             EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
-            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES  };
+            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
+            EventsContract.EventEntry.COLUMN_EVENT_SCORE};
 
     static final int COL_ID = 0;
     static final int COL_NAME = 1;
@@ -48,10 +49,13 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
     static final int COL_DOWNLOAD_DATE = 3;
     static final int COL_LINK_TO_ORIGIN = 4;
     static final int COL_ADDRESS = 5;
-    static final int COL_CATEGORY = 6;
-    static final int COL_DESCRIPTION = 7;
-    static final int COL_LOCATION_COORDINATES = 8;
-    static final int COL_REQUEST_COORDINATES = 9;
+    static final int COL_CATEGORY_1 = 60;
+    static final int COL_CATEGORY_2 = 61;
+    static final int COL_CATEGORY_3 = 62;
+    static final int COL_DESCRIPTION = 9;
+    static final int COL_LOCATION_COORDINATES = 10;
+    static final int COL_REQUEST_COORDINATES = 11;
+    static final int COL_EVENT_SCORE = 12;
 
     TextView detailText;
     String detailString = "No Text";
@@ -129,9 +133,16 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
 
         String name = data.getString(COL_NAME);
         String description = data.getString(COL_DESCRIPTION);
+        String category_1 = data.getString(COL_CATEGORY_1);
+        String category_2 = data.getString(COL_CATEGORY_2);
+        String category_3 = data.getString(COL_CATEGORY_3);
 
         Log.i("Detail Check", "onLoadFinished: " + name + description);
-        detailString = name + "\n" + description;
+        detailString = name + "\n" +
+                description + "\n" +
+                category_1 + "\n" +
+                category_2 + "\n" +
+                category_3;
 
         detailText.setText(detailString);
     }

@@ -15,6 +15,7 @@ public class EventDbHelper extends SQLiteOpenHelper{
 
     public static final String DATABASE_NAME = "events.db";
 
+
     public EventDbHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
@@ -23,15 +24,18 @@ public class EventDbHelper extends SQLiteOpenHelper{
         Log.i("onCreate", "onCreate: Attempting to create database");
         final String SQL_CREATE_EVENTS_TABLE = "CREATE TABLE " + EventsContract.EventEntry.TABLE_NAME
                 + " (_id INTEGER PRIMARY KEY AUTOINCREMENT, "
-                + EventsContract.EventEntry.COLUMN_NAME + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_DESCRIPTION + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_VENUE_NAME + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_ADDRESS + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_CATEGORY + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN + " TEXT, "
-                + EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE + " TEXT); ";
+                + EventsContract.EventEntry.COLUMN_NAME + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_DESCRIPTION + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_VENUE_NAME + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_ADDRESS + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_CATEGORY_1 + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_CATEGORY_2 + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_CATEGORY_3 + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE + " TEXT NOT NULL, "
+                + EventsContract.EventEntry.COLUMN_EVENT_SCORE + " REAL); ";
 
         sqLiteDatabase.execSQL(SQL_CREATE_EVENTS_TABLE);
     }

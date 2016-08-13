@@ -1,5 +1,7 @@
 package com.davidparkeredwards.fono;
 
+import java.util.List;
+
 /**
  * Created by User on 7/26/2016.
  */
@@ -10,21 +12,40 @@ public class FonoEvent {
     String venueName;
     String address;
     String description;
-    String category;
+    String category_1;
+    String category_2;
+    String category_3;
     String linkToOrigin;
     int id;
 
+    String locationCoordinates;
 
-    public FonoEvent(String name, String date, String venueName, String address, String description, String category, String linkToOrigin, int id) {
+
+    public FonoEvent(String name, String date, String venueName, String address, String description,
+                     String category_1,String category_2, String category_3, String linkToOrigin,
+                     int id, String locationCoordinates) {
         this.name = name;
         this.date = date;
         this.venueName = venueName;
         this.address = address;
         this.description = description;
-        this.category = category;
+        this.category_1 = category_1;
+        this.category_2 = category_2;
+        this.category_3 = category_3;
         this.linkToOrigin = linkToOrigin;
         this.id = id;
+        this.locationCoordinates = locationCoordinates;
+
     }
+
+    public String getLocationCoordinates() {
+        return locationCoordinates;
+    }
+
+    public void setLocationCoordinates(String locationCoordinates) {
+        this.locationCoordinates = locationCoordinates;
+    }
+
 
     public String getName() {
         return name;
@@ -66,12 +87,28 @@ public class FonoEvent {
         this.description = description;
     }
 
-    public String getCategory() {
-        return category;
+    public String getCategory_1() {
+        return category_1;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setCategory_1(String category_1) {
+        this.category_1 = category_1;
+    }
+
+    public String getCategory_2() {
+        return category_2;
+    }
+
+    public void setCategory_2(String category_2) {
+        this.category_2 = category_2;
+    }
+
+    public String getCategory_3() {
+        return category_3;
+    }
+
+    public void setCategory_3(String category_3) {
+        this.category_3 = category_3;
     }
 
     public String getLinkToOrigin() {

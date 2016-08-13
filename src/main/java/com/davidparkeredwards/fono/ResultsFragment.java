@@ -26,17 +26,21 @@ public class ResultsFragment extends Fragment implements LoaderManager.LoaderCal
 
     private static final int EVENTS_LOADER = 0;
 
-   private static final String[] EVENTS_COLUMNS = {
-           EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
-           EventsContract.EventEntry.COLUMN_NAME,
-           EventsContract.EventEntry.COLUMN_VENUE_NAME,
-           EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
-           EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
-           EventsContract.EventEntry.COLUMN_ADDRESS,
-           EventsContract.EventEntry.COLUMN_CATEGORY,
-           EventsContract.EventEntry.COLUMN_DESCRIPTION,
-           EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
-           EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES  };
+
+    private static final String[] EVENTS_COLUMNS = {
+            EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
+            EventsContract.EventEntry.COLUMN_NAME,
+            EventsContract.EventEntry.COLUMN_VENUE_NAME,
+            EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
+            EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
+            EventsContract.EventEntry.COLUMN_ADDRESS,
+            EventsContract.EventEntry.COLUMN_CATEGORY_1,
+            EventsContract.EventEntry.COLUMN_CATEGORY_2,
+            EventsContract.EventEntry.COLUMN_CATEGORY_3,
+            EventsContract.EventEntry.COLUMN_DESCRIPTION,
+            EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
+            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
+            EventsContract.EventEntry.COLUMN_EVENT_SCORE};
 
     static final int COL_ID = 0;
     static final int COL_NAME = 1;
@@ -44,11 +48,13 @@ public class ResultsFragment extends Fragment implements LoaderManager.LoaderCal
     static final int COL_DOWNLOAD_DATE = 3;
     static final int COL_LINK_TO_ORIGIN = 4;
     static final int COL_ADDRESS = 5;
-    static final int COL_CATEGORY = 6;
-    static final int COL_DESCRIPTION = 7;
-    static final int COL_LOCATION_COORDINATES = 8;
-    static final int COL_REQUEST_COORDINATES = 9;
-
+    static final int COL_CATEGORY_1 = 60;
+    static final int COL_CATEGORY_2 = 61;
+    static final int COL_CATEGORY_3 = 62;
+    static final int COL_DESCRIPTION = 9;
+    static final int COL_LOCATION_COORDINATES = 10;
+    static final int COL_REQUEST_COORDINATES = 11;
+    static final int COL_EVENT_SCORE = 12;
 
     private EventsAdapter eventsAdapter;
 

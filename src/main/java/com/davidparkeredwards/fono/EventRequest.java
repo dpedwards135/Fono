@@ -22,6 +22,7 @@ import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbHelper;
 import com.davidparkeredwards.fono.data.EventDbManager;
+import com.davidparkeredwards.fono.data.EventScorer;
 import com.davidparkeredwards.fono.data.SharedPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -62,6 +63,9 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
+        EventDbManager eventDbManager = new EventDbManager(context);
+        eventDbManager.scoreEvents();
+
         Log.i("Event Request", "Event Request Background thread complete");
 
     }
@@ -96,7 +100,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
             return null;
         //If date or location has changed since last sync, continue with sync
         } else {
-            Log.i("Run Sync?", "Coordinates and date have changed. Run sync.");
+            Log.i("Run Sync?", "Coordinates and/or date have changed. Run sync.");
             //Save new coordinates and date to sharedPreferences
             sharedPreference.save(context,coordinates,SharedPreference.PREFS_LOCATION_KEY);
             sharedPreference.save(context,date,SharedPreference.PREFS_SYNC_DATE_KEY);
@@ -115,9 +119,10 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                     Log.i("JSON Parse Loop", "Cycle: " + parsedPages + ", " + totalPages);
                     Log.i("JSON Parse Loop", "Events in eventsList: "+eventsList.size());
                 }
+
+
                 EventDbManager dbManager = new EventDbManager(context);
                 dbManager.createDbTable(eventsList, coordinates);
-
 
 
             } catch (JSONException e) {
@@ -206,7 +211,6 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
 
             JSONObject eventString = eventfulString.getJSONObject("events");
             JSONArray events = eventString.getJSONArray("event");
-            JSONObject checkEvent = events.getJSONObject(0);
             for (int i = 0; i < events.length(); i++) {
                 JSONObject jsonEvent = events.getJSONObject(i);
 
@@ -215,20 +219,45 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 String venueName = jsonEvent.getString("venue_name");
                 String address = jsonEvent.getString("venue_address") + ", " + jsonEvent.getString("city_name") + ", " + jsonEvent.getString("region_name");
                 String description = jsonEvent.getString("description");
-                String category = "";
+                String category_1 = "none";
+                String category_2 = "none";
+                String category_3 = "none";
 
-                ///Parse Category
+                ///Parse Category - currently only allows for max of 3 categories per event
                 JSONObject categoriesObject = jsonEvent.getJSONObject("categories");
                 JSONArray categoryArray = categoriesObject.getJSONArray("category");
-                for (int l = 0; l<categoryArray.length(); l++) {
-                    JSONObject categoryObject = categoryArray.getJSONObject(l);
-               category = category + categoryObject.getString("name");
+
+                Log.i("parseJSON", "JSON Array: " + categoryArray.toString());
+                //category_1-3 parse
+                if(categoryArray.length()>0) {
+                    category_1 = categoryArray.getJSONObject(0)
+                            .getString("name")
+                            .replaceAll("&amp;", "and");
+                    //Log.i("parseJSON", "Category 1: " + category_1);
+                }
+                if(categoryArray.length()>1) {
+                    category_2 = categoryArray.getJSONObject(1)
+                            .getString("name")
+                            .replaceAll("&amp;", "and");
+                    //Log.i("parseJSON", "Category 2: " + category_2);
+                }
+                if(categoryArray.length()>2) {
+                    category_3 = categoryArray.getJSONObject(2).
+                            getString("name").
+                            replaceAll("&amp;", "and");
+                    //Log.i("parseJSON", "Category 3: " + category_3);
                 }
 
+                //Log.i("parseJSON", "Completed Parsing Categories");
                 String linkToOrigin = jsonEvent.getString("url");
+                String locationCoordinates = jsonEvent.getString("latitude") + "," +
+                        jsonEvent.getString("longitude");
+
+
                 int id = 0;
 
-                FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description, category, linkToOrigin, id);
+                FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
+                        category_1, category_2, category_3, linkToOrigin, id, locationCoordinates);
                 eventsList.add(newFonoEvent);
 
             }

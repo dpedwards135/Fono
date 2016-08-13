@@ -190,11 +190,17 @@ public class EventsProvider extends ContentProvider {
 
         switch (match) {
             case EVENTS: {
-                updatedRows = db.delete(EventsContract.EventEntry.TABLE_NAME, selection, selectionArgs);
+                updatedRows = db.update(EventsContract.EventEntry.TABLE_NAME, values, selection, selectionArgs);
                 if (updatedRows > 0 || selection == null)
                     getContext().getContentResolver().notifyChange(uri, null);
                 return updatedRows;
-
+            }
+            case EVENTS_WITH_ID: {
+                Log.i("Case: EventsWithId", "query: ");
+                updatedRows = db.update(EventsContract.EventEntry.TABLE_NAME, values, selection, selectionArgs);
+                if (updatedRows > 0 || selection == null)
+                    getContext().getContentResolver().notifyChange(uri, null);
+                return updatedRows;
             }
             default:
                 throw new UnsupportedOperationException("Unknown uri: " + uri);

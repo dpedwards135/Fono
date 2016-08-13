@@ -8,6 +8,8 @@ import android.util.Log;
 
 import com.davidparkeredwards.fono.R;
 
+import java.util.List;
+
 /**
  * Created by User on 7/30/2016.
  */
@@ -37,9 +39,12 @@ public class EventsContract {
         public static final String COLUMN_VENUE_NAME = "VENUE_NAME";
         public static final String COLUMN_ADDRESS = "ADDRESS";
         public static final String COLUMN_DESCRIPTION = "DESCRIPTION";
-        public static final String COLUMN_CATEGORY = "CATEGORY";
+        public static final String COLUMN_CATEGORY_1 = "CATEGORY_1";
+        public static final String COLUMN_CATEGORY_2 = "CATEGORY_2";
+        public static final String COLUMN_CATEGORY_3 = "CATEGORY_3";
         public static final String COLUMN_LINK_TO_ORIGIN = "LINK_TO_ORIGIN";
         public static final String COLUMN_DOWNLOAD_DATE = "DOWNLOAD_DATE";
+        public static final String COLUMN_EVENT_SCORE = "EVENT_SCORE";
 
         public static Uri buildEventsUriWithId(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);
