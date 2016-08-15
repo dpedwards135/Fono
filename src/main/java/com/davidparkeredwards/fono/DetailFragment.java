@@ -31,30 +31,30 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
     private static final String[] EVENTS_COLUMNS = {
             EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
             EventsContract.EventEntry.COLUMN_NAME,
+            EventsContract.EventEntry.COLUMN_DESCRIPTION,
+            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
+            EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
             EventsContract.EventEntry.COLUMN_VENUE_NAME,
-            EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
-            EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
             EventsContract.EventEntry.COLUMN_ADDRESS,
             EventsContract.EventEntry.COLUMN_CATEGORY_1,
             EventsContract.EventEntry.COLUMN_CATEGORY_2,
             EventsContract.EventEntry.COLUMN_CATEGORY_3,
-            EventsContract.EventEntry.COLUMN_DESCRIPTION,
-            EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
-            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
+            EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
+            EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
             EventsContract.EventEntry.COLUMN_EVENT_SCORE};
 
     static final int COL_ID = 0;
     static final int COL_NAME = 1;
-    static final int COL_VENUE_NAME = 2;
-    static final int COL_DOWNLOAD_DATE = 3;
-    static final int COL_LINK_TO_ORIGIN = 4;
-    static final int COL_ADDRESS = 5;
-    static final int COL_CATEGORY_1 = 60;
-    static final int COL_CATEGORY_2 = 61;
-    static final int COL_CATEGORY_3 = 62;
-    static final int COL_DESCRIPTION = 9;
-    static final int COL_LOCATION_COORDINATES = 10;
-    static final int COL_REQUEST_COORDINATES = 11;
+    static final int COL_DESCRIPTION = 2;
+    static final int COL_REQUEST_COORDINATES = 3;
+    static final int COL_LOCATION_COORDINATES = 4;
+    static final int COL_VENUE_NAME = 5;
+    static final int COL_ADDRESS = 6;
+    static final int COL_CATEGORY_1 = 7;
+    static final int COL_CATEGORY_2 = 8;
+    static final int COL_CATEGORY_3 = 9;
+    static final int COL_LINK_TO_ORIGIN = 10;
+    static final int COL_DOWNLOAD_DATE = 11;
     static final int COL_EVENT_SCORE = 12;
 
     TextView detailText;

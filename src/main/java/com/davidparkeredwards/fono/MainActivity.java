@@ -54,5 +54,9 @@ public class MainActivity extends AppCompatActivity  {
         startActivity(launchEventfulResults);
     }
 
+    public void launchPreferences(View view) {
+        Intent launchPreferences = new Intent(this, PreferencesActivity.class);
+        startActivity(launchPreferences);
+    }
 }
 

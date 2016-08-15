@@ -35,7 +35,8 @@ public class EventDbHelper extends SQLiteOpenHelper{
                 + EventsContract.EventEntry.COLUMN_CATEGORY_3 + " TEXT NOT NULL, "
                 + EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN + " TEXT NOT NULL, "
                 + EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE + " TEXT NOT NULL, "
-                + EventsContract.EventEntry.COLUMN_EVENT_SCORE + " REAL); ";
+                + EventsContract.EventEntry.COLUMN_EVENT_SCORE + " REAL, "
+                + EventsContract.EventEntry.COLUMN_DISTANCE + " REAL);";
 
         sqLiteDatabase.execSQL(SQL_CREATE_EVENTS_TABLE);
     }

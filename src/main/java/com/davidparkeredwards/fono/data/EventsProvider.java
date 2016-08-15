@@ -65,17 +65,17 @@ public class EventsProvider extends ContentProvider {
                 null //sortOrder
         );
     }
-    private Cursor getEvents(Uri uri, String[] projection, String sortOrder) {
+    private Cursor getEvents(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
 
 
 
         return sEventsQueryBuilder.query(mOpenHelper.getReadableDatabase(),
                 projection,
-                null, //selection,
-                null, //selectionArgs,
+                selection,
+                selectionArgs,
                 null,
                 null,
-                null //sortOrder
+                sortOrder
         );
     }
 
@@ -121,8 +121,8 @@ public class EventsProvider extends ContentProvider {
         switch (sUriMatcher.match(uri)) {
             case EVENTS: {
                 Log.i("Case: Events", "query: ");
-                retCursor = getEvents(uri, projection, sortOrder);
-
+                retCursor = getEvents(uri, projection, selection, selectionArgs, sortOrder);
+                Log.i("Provider", "Check query: " + sortOrder);
                 break;
             }
             case EVENTS_WITH_ID: {

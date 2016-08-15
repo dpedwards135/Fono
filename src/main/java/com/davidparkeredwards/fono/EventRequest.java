@@ -233,19 +233,21 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                     category_1 = categoryArray.getJSONObject(0)
                             .getString("name")
                             .replaceAll("&amp;", "and");
-                    //Log.i("parseJSON", "Category 1: " + category_1);
+                    Log.i("parseJSON", "Category 1: " + category_1);
+                } else {
+                    category_1 = "Uncategorized";
                 }
                 if(categoryArray.length()>1) {
                     category_2 = categoryArray.getJSONObject(1)
                             .getString("name")
                             .replaceAll("&amp;", "and");
-                    //Log.i("parseJSON", "Category 2: " + category_2);
+                    Log.i("parseJSON", "Category 2: " + category_2);
                 }
                 if(categoryArray.length()>2) {
                     category_3 = categoryArray.getJSONObject(2).
                             getString("name").
                             replaceAll("&amp;", "and");
-                    //Log.i("parseJSON", "Category 3: " + category_3);
+                    Log.i("parseJSON", "Category 3: " + category_3);
                 }
 
                 //Log.i("parseJSON", "Completed Parsing Categories");

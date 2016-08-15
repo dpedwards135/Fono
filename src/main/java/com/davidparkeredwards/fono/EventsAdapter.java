@@ -21,7 +21,11 @@ public class EventsAdapter extends CursorAdapter {
 
     private String convertCursorRowToUxFormat(Cursor cursor) {
 
-        return cursor.getString(ResultsFragment.COL_NAME) + "\n" + cursor.getString(ResultsFragment.COL_VENUE_NAME);
+        return cursor.getString(ResultsFragment.COL_NAME)
+                + "\n" + cursor.getString(ResultsFragment.COL_VENUE_NAME)
+                + "\n" + cursor.getString(ResultsFragment.COL_EVENT_SCORE)
+                + "\n" + Long.toString(cursor.getLong(ResultsFragment.COL_ID))
+                + "\n" + Long.toString(cursor.getLong(ResultsFragment.COL_DISTANCE));
     }
 
     @Override

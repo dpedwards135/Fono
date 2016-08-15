@@ -44,7 +44,9 @@ public class EventDbManager {
             EventsContract.EventEntry.COLUMN_CATEGORY_3,
             EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
             EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
-            EventsContract.EventEntry.COLUMN_EVENT_SCORE};
+            EventsContract.EventEntry.COLUMN_EVENT_SCORE,
+            EventsContract.EventEntry.COLUMN_DISTANCE,
+    };
 
     static final int COL_ID = 0;
     static final int COL_NAME = 1;
@@ -59,6 +61,7 @@ public class EventDbManager {
     static final int COL_LINK_TO_ORIGIN = 10;
     static final int COL_DOWNLOAD_DATE = 11;
     static final int COL_EVENT_SCORE = 12;
+    static final int COL_DISTANCE = 13;
 
     private Context context;
     String TAG = "EventDbManager";
@@ -111,9 +114,9 @@ public class EventDbManager {
                                     );     */
             //Get Category preferences
             SharedPreference sharedPreference = new SharedPreference();
-            //Set<String> categoryInsert = new HashSet<String>();
-            //categoryInsert.add("Outdoors and Recreation");
-            //sharedPreference.saveCategories(context, categoryInsert);
+            Set<String> categoryInsert = new HashSet<String>();
+            categoryInsert.add("Outdoors and Recreation");
+            sharedPreference.saveCategories(context, categoryInsert);
             Set<String> categoriesList = sharedPreference.getCategoriesList(context);
             double score = 0;
 
@@ -132,7 +135,14 @@ public class EventDbManager {
             //Change the 30 for radius number later
             double milesScore = 30-miles;
             score = score + milesScore;
+            Log.i(TAG, "Check Cat List: " + categoriesList.toString());
 
+            ////Check for notNull description, add bonus
+            if(description.matches("null")) {
+                score = score + 0;
+            } else {
+                score = score + 10;
+            }
 
             ////Check category score and finalize score
             if(categoriesList.contains(category_1) ||
@@ -141,14 +151,28 @@ public class EventDbManager {
                 score = score + 10;
             }
 
+            ///////Check score
+            Log.i(TAG, "Event Score: " + score);
+            String[] idString = {_id.toString()};
+
             //////Save score to DB
             ContentValues newScore = new ContentValues();
             newScore.put(EventsContract.EventEntry.COLUMN_EVENT_SCORE, score);
-            context.getContentResolver().update(EventsContract.EventEntry.buildEventsUriWithId(_id),newScore,null,null);
+            newScore.put(EventsContract.EventEntry.COLUMN_DISTANCE, miles);
+            context.getContentResolver().update(EventsContract.EventEntry.buildEventsUriWithId(_id),
+                    newScore, EventsContract.EventEntry._ID + " = ?",idString);
 
         }
+
         cursor.close();
 
+        ///////Print all categories for reference
+        String uniqueCategories;
+        String[] categorySelector = {"DISTINCT CATEGORY_1"};
+        Cursor catCursor = context.getContentResolver().query(EventsContract.EventEntry.CONTENT_URI,categorySelector, null,null,null);
+        while (catCursor.moveToNext()) {
+            Log.i(TAG, "scoreEvents: " + catCursor.getString(0));
+        }
     }
 
 
@@ -195,17 +219,4 @@ public class EventDbManager {
 
     }
 
-    ////Calculate Distance
-    public static float distFrom(float lat1,float lng1, float lat2, float lng2) {
-        double earthRadius = 6371000; //meters
-        double dLat = Math.toRadians(lat2-lat1);
-        double dLng = Math.toRadians(lng2-lng1);
-        double a = Math.sin(dLat/2) * Math.sin(dLat/2) +
-                Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2)) *
-                        Math.sin(dLng/2) * Math.sin(dLng/2);
-        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-        float dist = (float) (earthRadius * c);
-
-        return dist;
-    }
 }
