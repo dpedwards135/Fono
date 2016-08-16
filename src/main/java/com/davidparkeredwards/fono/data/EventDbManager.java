@@ -114,9 +114,9 @@ public class EventDbManager {
                                     );     */
             //Get Category preferences
             SharedPreference sharedPreference = new SharedPreference();
-            Set<String> categoryInsert = new HashSet<String>();
-            categoryInsert.add("Outdoors and Recreation");
-            sharedPreference.saveCategories(context, categoryInsert);
+            //Set<String> categoryInsert = new HashSet<String>();
+            //categoryInsert.add("Outdoors and Recreation");
+            //sharedPreference.saveCategories(context, categoryInsert);
             Set<String> categoriesList = sharedPreference.getCategoriesList(context);
             double score = 0;
 
