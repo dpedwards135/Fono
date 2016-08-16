@@ -8,7 +8,9 @@ import android.preference.PreferenceManager;
 import com.davidparkeredwards.fono.FONO;
 import com.davidparkeredwards.fono.R;
 
+import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Set;
 
 
@@ -57,8 +59,12 @@ public class SharedPreference {
         SharedPreferences settings;
         Set<String> categoriesList;
 
+
         settings = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         categoriesList = settings.getStringSet(PREFS_CATEGORIES_KEY, null);
+        if (categoriesList == null) {
+            categoriesList = new HashSet<String>(Arrays.asList("No Categories Selected"));
+        }
         return categoriesList;
     }
 

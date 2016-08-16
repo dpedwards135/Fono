@@ -2,15 +2,21 @@ package com.davidparkeredwards.fono.data;
 
 import android.app.usage.UsageEvents;
 import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.content.OperationApplicationException;
 import android.content.UriMatcher;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.net.Uri;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Log;
+
+import java.util.ArrayList;
 
 /**
  * Created by User on 8/8/2016.
@@ -234,5 +240,6 @@ public class EventsProvider extends ContentProvider {
         }
 
     }
+
 }
 

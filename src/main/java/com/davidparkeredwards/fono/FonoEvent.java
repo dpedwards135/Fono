@@ -19,11 +19,39 @@ public class FonoEvent {
     int id;
 
     String locationCoordinates;
+    String requestCoordinates;
+    double distance;
+    double eventScore;
 
+
+    public String getRequestCoordinates() {
+        return requestCoordinates;
+    }
+
+    public void setRequestCoordinates(String requestCoordinates) {
+        this.requestCoordinates = requestCoordinates;
+    }
+
+    public double getDistance() {
+        return distance;
+    }
+
+    public void setDistance(double distance) {
+        this.distance = distance;
+    }
+
+    public double getEventScore() {
+        return eventScore;
+    }
+
+    public void setEventScore(double eventScore) {
+        this.eventScore = eventScore;
+    }
 
     public FonoEvent(String name, String date, String venueName, String address, String description,
-                     String category_1,String category_2, String category_3, String linkToOrigin,
-                     int id, String locationCoordinates) {
+                     String category_1, String category_2, String category_3, String linkToOrigin,
+                     int id, String locationCoordinates, String requestCoordinates, double distance,
+                     double eventScore) {
         this.name = name;
         this.date = date;
         this.venueName = venueName;
@@ -35,6 +63,9 @@ public class FonoEvent {
         this.linkToOrigin = linkToOrigin;
         this.id = id;
         this.locationCoordinates = locationCoordinates;
+        this.requestCoordinates = requestCoordinates;
+        this.distance = distance;
+        this.eventScore = eventScore;
 
     }
 

@@ -21,6 +21,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
+import com.davidparkeredwards.fono.data.EventScorer;
 import com.davidparkeredwards.fono.data.EventsContract;
 import com.davidparkeredwards.fono.data.SharedPreference;
 
@@ -140,11 +141,12 @@ public class PreferencesFragment extends Fragment {
         ////Get SharedPreference and save
         SharedPreference sharedPreference = new SharedPreference();
         sharedPreference.saveCategories(getContext(), categorySaveString);
-        EventDbManager eventDbManager = new EventDbManager(getContext());
+/*        EventDbManager eventDbManager = new EventDbManager(getContext());
         eventDbManager.scoreEvents();
         Log.i("savePreferences", "savePreferences: Scoring Events");
-
-
+*/
+        EventScorer eventScorer = new EventScorer();
+        eventScorer.bulkReScore(getContext());
     }
 
     @Override

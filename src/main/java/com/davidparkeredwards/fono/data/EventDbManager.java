@@ -70,18 +70,18 @@ public class EventDbManager {
         this.context = context;
     }
 
-    public void createDbTable(List eventsList, String centerLocation){
+    public void createDbTable(List eventsList){
 
         try {
             deleteEventRecords();
-            bulkInsert(eventsList, centerLocation);
+            bulkInsert(eventsList);
 
         }
         catch (SQLiteException e) {
             Log.i(TAG, "createDbTable: Unable to get DB");
         }
     }
-
+    ///////////DEPRECATE
     public void scoreEvents() {
 
         Log.i(TAG, "scoreEvents: Scoring Events");
@@ -184,7 +184,7 @@ public class EventDbManager {
     }
 
 
-    public void bulkInsert(List<FonoEvent> eventsList, String centerLocation) {
+    public void bulkInsert(List<FonoEvent> eventsList) {
         Log.i(TAG, "bulkInsert: attempting bulk insert through content provider");
         int listLength = eventsList.size();
         Vector<ContentValues> cVVector = new Vector<ContentValues>(listLength);
@@ -194,7 +194,7 @@ public class EventDbManager {
             Date today = new Date();
 
             ContentValues eventValues = new ContentValues();
-            eventValues.put(EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES, centerLocation);
+            eventValues.put(EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES, fonoEvent.getRequestCoordinates());
             eventValues.put(EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES, fonoEvent.getLocationCoordinates());
             eventValues.put(EventsContract.EventEntry.COLUMN_NAME, fonoEvent.getName());
             eventValues.put(EventsContract.EventEntry.COLUMN_VENUE_NAME, fonoEvent.getVenueName());
@@ -205,6 +205,8 @@ public class EventDbManager {
             eventValues.put(EventsContract.EventEntry.COLUMN_CATEGORY_3, fonoEvent.getCategory_3());
             eventValues.put(EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN, fonoEvent.getLinkToOrigin());
             eventValues.put(EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE, today.toString());
+            eventValues.put(EventsContract.EventEntry.COLUMN_DISTANCE, fonoEvent.getDistance());
+            eventValues.put(EventsContract.EventEntry.COLUMN_EVENT_SCORE, fonoEvent.getEventScore());
 
             cVVector.add(i, eventValues);
 

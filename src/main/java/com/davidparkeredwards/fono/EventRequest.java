@@ -63,8 +63,8 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        EventDbManager eventDbManager = new EventDbManager(context);
-        eventDbManager.scoreEvents();
+        //EventDbManager eventDbManager = new EventDbManager(context);
+        //eventDbManager.scoreEvents();
 
         Log.i("Event Request", "Event Request Background thread complete");
 
@@ -122,7 +122,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
 
 
                 EventDbManager dbManager = new EventDbManager(context);
-                dbManager.createDbTable(eventsList, coordinates);
+                dbManager.createDbTable(eventsList);
 
 
             } catch (JSONException e) {
@@ -204,7 +204,8 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
         return eventsJsonStr;
     }
 
-
+        //////This method parses JSON string and adds distance and event scores to create
+        //////final eventsList to save
         public List parseJsonString(String jsonString) throws JSONException {
             List eventsList = new ArrayList();
             JSONObject eventfulString = new JSONObject(jsonString);
@@ -222,6 +223,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 String category_1 = "none";
                 String category_2 = "none";
                 String category_3 = "none";
+                double distance = 0;
 
                 ///Parse Category - currently only allows for max of 3 categories per event
                 JSONObject categoriesObject = jsonEvent.getJSONObject("categories");
@@ -254,12 +256,18 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 String linkToOrigin = jsonEvent.getString("url");
                 String locationCoordinates = jsonEvent.getString("latitude") + "," +
                         jsonEvent.getString("longitude");
-
-
+                String requestCoordinates = coordinates;
+                EventScorer eventScorer = new EventScorer();
+                distance = eventScorer.calculateDistance(locationCoordinates, requestCoordinates);
+                Log.i("Calculate Distance", "Distance = " + distance);
+                double eventScore = eventScorer.scoreEvents(context, distance, category_1, category_2,
+                        category_3, description);
                 int id = 0;
 
                 FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
-                        category_1, category_2, category_3, linkToOrigin, id, locationCoordinates);
+                        category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates,
+                        distance, eventScore);
+
                 eventsList.add(newFonoEvent);
 
             }
