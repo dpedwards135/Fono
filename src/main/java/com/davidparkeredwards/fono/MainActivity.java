@@ -5,6 +5,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -44,19 +45,27 @@ public class MainActivity extends AppCompatActivity  {
         FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
         fonoSyncAdapter.initializeSyncAdapter(this);
         fonoSyncAdapter.syncImmediately(this);
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction().add(R.id.mainActivityContainer, new ResultsFragment()).commit();
+        }
 
 
     }
 
 
+    public void launchCustomSearch(View view) {
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new CustomSearchFragment()).commit();
+    }
+
     public void launchEventfulResults(View view) {
-        Intent launchEventfulResults = new Intent(this, EventfulResults.class);
-        startActivity(launchEventfulResults);
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new ResultsFragment()).commit();
     }
 
     public void launchPreferences(View view) {
-        Intent launchPreferences = new Intent(this, PreferencesActivity.class);
-        startActivity(launchPreferences);
+
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new PreferencesFragment()).commit();
+
+
     }
 }
 

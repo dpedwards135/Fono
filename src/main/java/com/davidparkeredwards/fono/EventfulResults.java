@@ -25,7 +25,6 @@ public class EventfulResults extends AppCompatActivity {
         }
         /*
 
-
         */
 
 
