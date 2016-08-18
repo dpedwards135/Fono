@@ -45,10 +45,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.prefs.PreferenceChangeListener;
 
-/**
- * I need to change this class so that all it does is update the database
- * and then do all the event loading on the pertinent activity/fragment.
+/* Need to take scoring function out, add it to listView adapters
+ * 1. Convert EventAdapters to ArrayAdapters that take an array pulled from DB
+ * 2. Keep CursorLoaders in place, load
+ *
  */
+
 public class EventRequest extends AsyncTask<Void, Void, Void> {
 
     //1. Get Center Location, 2. Pull events, 3. Update content provider
@@ -348,17 +350,13 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 String locationCoordinates = jsonEvent.getString("latitude") + "," +
                         jsonEvent.getString("longitude");
                 String requestCoordinates = coordinates;
-                EventScorer eventScorer = new EventScorer();
-                distance = eventScorer.calculateDistance(locationCoordinates, requestCoordinates);
-                //Log.i("Calculate Distance", "Distance = " + distance);
-                double eventScore = eventScorer.scoreEvents(context, distance, category_1, category_2,
-                        category_3, description);
+
                 int id = 0;
                 String eventRequester = requester;
 
                 FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
                         category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates,
-                        distance, eventScore, eventRequester);
+                        eventRequester);
 
                 eventsList.add(newFonoEvent);
 

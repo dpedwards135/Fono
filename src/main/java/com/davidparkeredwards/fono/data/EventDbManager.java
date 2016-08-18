@@ -123,8 +123,6 @@ public class EventDbManager {
             eventValues.put(EventsContract.EventEntry.COLUMN_CATEGORY_3, fonoEvent.getCategory_3());
             eventValues.put(EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN, fonoEvent.getLinkToOrigin());
             eventValues.put(EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE, today.toString());
-            eventValues.put(EventsContract.EventEntry.COLUMN_DISTANCE, fonoEvent.getDistance());
-            eventValues.put(EventsContract.EventEntry.COLUMN_EVENT_SCORE, fonoEvent.getEventScore());
             eventValues.put(EventsContract.EventEntry.COLUMN_REQUESTER, fonoEvent.getRequester());
 
             cVVector.add(i, eventValues);
@@ -140,4 +138,38 @@ public class EventDbManager {
 
     }
 
+    public List<FonoEventScored> getEventsScoredArray(Cursor cursor) {
+
+        //Used to create Lists for ArrayAdapters, given a cursor from a cursor loader.
+        List<FonoEventScored> listViewInfo = new ArrayList<>();
+
+        while (cursor.moveToNext()) {
+            //Pull info desired to display in ListView and add to listViewInfo. Be sure to add ID
+            //Add score and distance for each object as it is pulled
+            int _id = cursor.getInt(EventDbManager.COL_ID);
+            String name = cursor.getString(EventDbManager.COL_NAME);
+            String description = cursor.getString(EventDbManager.COL_DESCRIPTION);
+            String requestCoordinates = cursor.getString(EventDbManager.COL_REQUEST_COORDINATES);
+            String locationCoordinates = cursor.getString(EventDbManager.COL_LOCATION_COORDINATES);
+            String venueName = cursor.getString(EventDbManager.COL_VENUE_NAME);
+            String address = cursor.getString(EventDbManager.COL_ADDRESS);
+            String category1 = cursor.getString(EventDbManager.COL_CATEGORY_1);
+            String category2 = cursor.getString(EventDbManager.COL_CATEGORY_2);
+            String category3 = cursor.getString(EventDbManager.COL_CATEGORY_3);
+            String linkToOrigin = cursor.getString(EventDbManager.COL_LINK_TO_ORIGIN);
+            String downloadDate = cursor.getString(EventDbManager.COL_DOWNLOAD_DATE);
+            String requester = cursor.getString(EventDbManager.COL_REQUESTER);
+
+            FonoEventScored fonoEventScored = new FonoEventScored(name, downloadDate, venueName, address, description,
+                    category1, category2, category3, linkToOrigin, _id, locationCoordinates, requestCoordinates,
+                    requester);
+
+            listViewInfo.add(fonoEventScored);
+            /* Remove these from all DB operations:
+                    EventsContract.EventEntry.COLUMN_EVENT_SCORE,
+                    EventsContract.EventEntry.COLUMN_DISTANCE,
+        */
+        }
+        return listViewInfo;
+    }
 }

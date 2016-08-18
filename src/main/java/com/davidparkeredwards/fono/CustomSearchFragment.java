@@ -19,6 +19,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -26,8 +27,11 @@ import android.widget.ListView;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
+import com.davidparkeredwards.fono.data.FonoEventScored;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 // Next - Create input fields that store values to be passed to EventRequest - Keywords, date, location
 
@@ -37,7 +41,7 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     private View rootView;
 
     private EventsAdapter eventsAdapter;
-
+    ArrayAdapter<FonoEvent> arrayAdapter;
     private View.OnClickListener customSearchListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -142,7 +146,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         getLoaderManager().initLoader(EVENTS_LOADER,null,this);
         super.onActivityCreated(savedInstanceState);
     }
-
     //private void updateEvents --> Put AsyncTask here
 
 
@@ -172,10 +175,20 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
         eventsAdapter.swapCursor(cursor);
+        //Swap ArrayAdapter with new adapter
+        EventDbManager eventDbManager = new EventDbManager(getContext());
+        List<FonoEventScored> listViewInfo = eventDbManager.getEventsScoredArray(cursor);
+        arrayAdapter.clear();
+        arrayAdapter.addAll(listViewInfo);
     }
+
+
 
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         eventsAdapter.swapCursor(null);
+        //And here
+
+
     }
 }
 
