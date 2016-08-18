@@ -31,7 +31,7 @@ import java.util.Vector;
  */
 public class EventDbManager {
 
-    private static final String[] EVENTS_COLUMNS = {
+    public static String[] EVENTS_COLUMNS = {
             EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
             EventsContract.EventEntry.COLUMN_NAME,
             EventsContract.EventEntry.COLUMN_DESCRIPTION,
@@ -46,22 +46,27 @@ public class EventDbManager {
             EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
             EventsContract.EventEntry.COLUMN_EVENT_SCORE,
             EventsContract.EventEntry.COLUMN_DISTANCE,
+            EventsContract.EventEntry.COLUMN_REQUESTER
     };
 
-    static final int COL_ID = 0;
-    static final int COL_NAME = 1;
-    static final int COL_DESCRIPTION = 2;
-    static final int COL_REQUEST_COORDINATES = 3;
-    static final int COL_LOCATION_COORDINATES = 4;
-    static final int COL_VENUE_NAME = 5;
-    static final int COL_ADDRESS = 6;
-    static final int COL_CATEGORY_1 = 7;
-    static final int COL_CATEGORY_2 = 8;
-    static final int COL_CATEGORY_3 = 9;
-    static final int COL_LINK_TO_ORIGIN = 10;
-    static final int COL_DOWNLOAD_DATE = 11;
-    static final int COL_EVENT_SCORE = 12;
-    static final int COL_DISTANCE = 13;
+    public static int COL_ID = 0;
+    public static int COL_NAME = 1;
+    public static int COL_DESCRIPTION = 2;
+    public static int COL_REQUEST_COORDINATES = 3;
+    public static int COL_LOCATION_COORDINATES = 4;
+    public static int COL_VENUE_NAME = 5;
+    public static int COL_ADDRESS = 6;
+    public static int COL_CATEGORY_1 = 7;
+    public static int COL_CATEGORY_2 = 8;
+    public static int COL_CATEGORY_3 = 9;
+    public static int COL_LINK_TO_ORIGIN = 10;
+    public static int COL_DOWNLOAD_DATE = 11;
+    public static int COL_EVENT_SCORE = 12;
+    public static int COL_DISTANCE = 13;
+    public static int COL_REQUESTER = 14;
+
+    public static final String CUSTOM_SEARCH_REQUEST = "Custom Search Request";
+    public static final String RADAR_SEARCH_REQUEST = "Radar Search Request";
 
     private Context context;
     String TAG = "EventDbManager";
@@ -70,10 +75,15 @@ public class EventDbManager {
         this.context = context;
     }
 
-    public void createDbTable(List eventsList){
+    public void deleteAndInsertEvents(String eventRequester, List<FonoEvent> eventsList){
+
+        for(int i = 0; i<eventsList.size(); i++) {
+            FonoEvent checkEvent = eventsList.get(i);
+            Log.i(TAG, "Check Requester: " + checkEvent.getRequester());
+        }
 
         try {
-            deleteEventRecords();
+            deleteEventRecords(eventRequester);
             bulkInsert(eventsList);
 
         }
@@ -81,106 +91,14 @@ public class EventDbManager {
             Log.i(TAG, "createDbTable: Unable to get DB");
         }
     }
-    ///////////DEPRECATE
-    public void scoreEvents() {
 
-        Log.i(TAG, "scoreEvents: Scoring Events");
-        Cursor cursor = context.getContentResolver().query(EventsContract.EventEntry.CONTENT_URI,null, null, null, null);
+    public void deleteEventRecords(String eventRequester) {
 
+        String selection = EventsContract.EventEntry.COLUMN_REQUESTER + "=?";
+        String[] selectionArgs = new String[] {eventRequester};
 
-        Log.i(TAG, "scoreEvents: " + cursor.getCount());
-
-        while (cursor.moveToNext()) {
-            String name = cursor.getString(COL_NAME);
-            String description = cursor.getString(COL_DESCRIPTION);
-            String category_1 = cursor.getString(COL_CATEGORY_1);
-            String category_2 = cursor.getString(COL_CATEGORY_2);
-            String category_3 = cursor.getString(COL_CATEGORY_3);
-            double oldScore = cursor.getDouble(COL_EVENT_SCORE);
-            String location_coordinates = cursor.getString(COL_LOCATION_COORDINATES);
-            String request_coordinates = cursor.getString(COL_REQUEST_COORDINATES);
-            Long _id = cursor.getLong(COL_ID);
-                        /*
-                                    Log.i("Detail Check", "onLoadFinished: Name " + name + "\n Description " +
-                                            description + "\nC1 " +
-                                            category_1 + "\nC2 " +
-                                            category_2 + "\nC3 " +
-                                            category_3 + "\noldScore " +
-                                            oldScore + "\nID " +
-                                            _id + "\nLocationC " +
-                                            location_coordinates + "\nRequestC " +
-                                            request_coordinates + "\n"
-
-                                    );     */
-            //Get Category preferences
-            SharedPreference sharedPreference = new SharedPreference();
-            //Set<String> categoryInsert = new HashSet<String>();
-            //categoryInsert.add("Outdoors and Recreation");
-            //sharedPreference.saveCategories(context, categoryInsert);
-            Set<String> categoriesList = sharedPreference.getCategoriesList(context);
-            double score = 0;
-
-            /////////Check Distance and add distance score
-            List<String> locations = Arrays.asList(location_coordinates.split("\\s*,\\s*"));
-            List<String> requests = Arrays.asList(request_coordinates.split("\\s*,\\s*"));
-            double la1 = Double.valueOf(locations.get(0));
-            double lo1 = Double.valueOf(locations.get(1));
-            double la2 = Double.valueOf(requests.get(0));
-            double lo2 = Double.valueOf(requests.get(1));
-            float[] results = {0,0,0};
-            Location.distanceBetween(la2,lo2,la1,lo1,results);
-
-            double miles = results[0]*.000621371;
-
-            //Change the 30 for radius number later
-            double milesScore = 30-miles;
-            score = score + milesScore;
-            Log.i(TAG, "Check Cat List: " + categoriesList.toString());
-
-            ////Check for notNull description, add bonus
-            if(description.matches("null")) {
-                score = score + 0;
-            } else {
-                score = score + 10;
-            }
-
-            ////Check category score and finalize score
-            if(categoriesList.contains(category_1) ||
-               categoriesList.contains(category_2) ||
-                categoriesList.contains(category_3)) {
-                score = score + 10;
-            }
-
-            ///////Check score
-            Log.i(TAG, "Event Score: " + score);
-            String[] idString = {_id.toString()};
-
-            //////Save score to DB
-            ContentValues newScore = new ContentValues();
-            newScore.put(EventsContract.EventEntry.COLUMN_EVENT_SCORE, score);
-            newScore.put(EventsContract.EventEntry.COLUMN_DISTANCE, miles);
-            context.getContentResolver().update(EventsContract.EventEntry.buildEventsUriWithId(_id),
-                    newScore, EventsContract.EventEntry._ID + " = ?",idString);
-
-        }
-
-        cursor.close();
-
-        ///////Print all categories for reference
-        String uniqueCategories;
-        String[] categorySelector = {"DISTINCT CATEGORY_1"};
-        Cursor catCursor = context.getContentResolver().query(EventsContract.EventEntry.CONTENT_URI,categorySelector, null,null,null);
-        while (catCursor.moveToNext()) {
-            Log.i(TAG, "scoreEvents: " + catCursor.getString(0));
-        }
-    }
-
-
-    public void deleteEventRecords() {
-
-        //db.execSQL("delete from EVENTS");
-        context.getContentResolver().delete(EventsContract.EventEntry.CONTENT_URI, null, null);
-        Log.i(TAG, "deleteEventRecords: deleting from content provider");
+        int deletedRows = context.getContentResolver().delete(EventsContract.EventEntry.CONTENT_URI, selection, selectionArgs);
+        Log.i(TAG, "deleteEventRecords: deleted rows = " + deletedRows);
     }
 
 
@@ -207,6 +125,7 @@ public class EventDbManager {
             eventValues.put(EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE, today.toString());
             eventValues.put(EventsContract.EventEntry.COLUMN_DISTANCE, fonoEvent.getDistance());
             eventValues.put(EventsContract.EventEntry.COLUMN_EVENT_SCORE, fonoEvent.getEventScore());
+            eventValues.put(EventsContract.EventEntry.COLUMN_REQUESTER, fonoEvent.getRequester());
 
             cVVector.add(i, eventValues);
 

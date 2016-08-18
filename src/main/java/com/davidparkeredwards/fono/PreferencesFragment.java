@@ -146,7 +146,7 @@ public class PreferencesFragment extends Fragment {
         Log.i("savePreferences", "savePreferences: Scoring Events");
 */
         EventScorer eventScorer = new EventScorer();
-        eventScorer.bulkReScore(getContext());
+        eventScorer.bulkReScore(getContext(), EventDbManager.RADAR_SEARCH_REQUEST);
     }
 
     @Override

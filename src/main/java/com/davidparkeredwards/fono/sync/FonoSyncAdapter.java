@@ -15,6 +15,7 @@ import android.util.Log;
 import com.davidparkeredwards.fono.EventRequest;
 import com.davidparkeredwards.fono.FONO;
 import com.davidparkeredwards.fono.R;
+import com.davidparkeredwards.fono.data.EventDbManager;
 
 /**
  * Created by User on 8/10/2016.
@@ -34,7 +35,8 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.i("SyncAdapter", "onPerformSync: Performing sync");
-        EventRequest eventRequest = new EventRequest(FONO.getContext());
+        EventRequest eventRequest = new EventRequest(FONO.getContext(),
+                "", "", EventDbManager.RADAR_SEARCH_REQUEST, "");
         eventRequest.execute();
         Log.i("onPerformSync", "onPerformSync: Ending onPerformSync");
     }

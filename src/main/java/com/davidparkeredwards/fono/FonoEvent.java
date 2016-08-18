@@ -23,6 +23,16 @@ public class FonoEvent {
     double distance;
     double eventScore;
 
+    public String getRequester() {
+        return requester;
+    }
+
+    public void setRequester(String requester) {
+        this.requester = requester;
+    }
+
+    String requester;
+
 
     public String getRequestCoordinates() {
         return requestCoordinates;
@@ -48,10 +58,11 @@ public class FonoEvent {
         this.eventScore = eventScore;
     }
 
+
     public FonoEvent(String name, String date, String venueName, String address, String description,
                      String category_1, String category_2, String category_3, String linkToOrigin,
                      int id, String locationCoordinates, String requestCoordinates, double distance,
-                     double eventScore) {
+                     double eventScore, String requester) {
         this.name = name;
         this.date = date;
         this.venueName = venueName;
@@ -66,6 +77,7 @@ public class FonoEvent {
         this.requestCoordinates = requestCoordinates;
         this.distance = distance;
         this.eventScore = eventScore;
+        this.requester = requester;
 
     }
 

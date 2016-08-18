@@ -21,38 +21,6 @@ import java.util.Set;
  */
 public class EventScorer {
 
-    private static final String[] EVENTS_COLUMNS = {
-            EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
-            EventsContract.EventEntry.COLUMN_NAME,
-            EventsContract.EventEntry.COLUMN_DESCRIPTION,
-            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
-            EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
-            EventsContract.EventEntry.COLUMN_VENUE_NAME,
-            EventsContract.EventEntry.COLUMN_ADDRESS,
-            EventsContract.EventEntry.COLUMN_CATEGORY_1,
-            EventsContract.EventEntry.COLUMN_CATEGORY_2,
-            EventsContract.EventEntry.COLUMN_CATEGORY_3,
-            EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
-            EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
-            EventsContract.EventEntry.COLUMN_EVENT_SCORE,
-            EventsContract.EventEntry.COLUMN_DISTANCE,
-    };
-
-    static final int COL_ID = 0;
-    static final int COL_NAME = 1;
-    static final int COL_DESCRIPTION = 2;
-    static final int COL_REQUEST_COORDINATES = 3;
-    static final int COL_LOCATION_COORDINATES = 4;
-    static final int COL_VENUE_NAME = 5;
-    static final int COL_ADDRESS = 6;
-    static final int COL_CATEGORY_1 = 7;
-    static final int COL_CATEGORY_2 = 8;
-    static final int COL_CATEGORY_3 = 9;
-    static final int COL_LINK_TO_ORIGIN = 10;
-    static final int COL_DOWNLOAD_DATE = 11;
-    static final int COL_EVENT_SCORE = 12;
-    static final int COL_DISTANCE = 13;
-
     String TAG = "EventScorer";
 
 
@@ -126,30 +94,32 @@ public class EventScorer {
         while (cursor.moveToNext()) {
 
         //////Get Old Data
-            String name = cursor.getString(COL_NAME);
-            String date = cursor.getString(COL_DOWNLOAD_DATE);
-            String venueName = cursor.getString(COL_VENUE_NAME);
-            String address = cursor.getString(COL_ADDRESS);
-            String description = cursor.getString(COL_DESCRIPTION);
-            String category_1 = cursor.getString(COL_CATEGORY_1);
-            String category_2 = cursor.getString(COL_CATEGORY_2);
-            String category_3 = cursor.getString(COL_CATEGORY_3);
-            String linkToOrigin = cursor.getString(COL_LINK_TO_ORIGIN);
-            int id = cursor.getInt(COL_ID);
-            String locationCoordinates = cursor.getString(COL_LOCATION_COORDINATES);
-            String requestCoordinates = cursor.getString(COL_REQUEST_COORDINATES);
-            double distance = cursor.getDouble(COL_DISTANCE);
-            double eventScore = cursor.getDouble(COL_EVENT_SCORE);
+            String name = cursor.getString(EventDbManager.COL_NAME);
+            String date = cursor.getString(EventDbManager.COL_DOWNLOAD_DATE);
+            String venueName = cursor.getString(EventDbManager.COL_VENUE_NAME);
+            String address = cursor.getString(EventDbManager.COL_ADDRESS);
+            String description = cursor.getString(EventDbManager.COL_DESCRIPTION);
+            String category_1 = cursor.getString(EventDbManager.COL_CATEGORY_1);
+            String category_2 = cursor.getString(EventDbManager.COL_CATEGORY_2);
+            String category_3 = cursor.getString(EventDbManager.COL_CATEGORY_3);
+            String linkToOrigin = cursor.getString(EventDbManager.COL_LINK_TO_ORIGIN);
+            int id = cursor.getInt(EventDbManager.COL_ID);
+            String locationCoordinates = cursor.getString(EventDbManager.COL_LOCATION_COORDINATES);
+            String requestCoordinates = cursor.getString(EventDbManager.COL_REQUEST_COORDINATES);
+            double distance = cursor.getDouble(EventDbManager.COL_DISTANCE);
+            double eventScore = cursor.getDouble(EventDbManager.COL_EVENT_SCORE);
         /////Calculate New Data
             distance = calculateDistance(locationCoordinates, requestCoordinates);
             eventScore = scoreEvents(context, distance, category_1, category_2,
                     category_3, description);
             Log.i(TAG, "New Event Score - Name: " + name + "; Score: " + eventScore);
 
+            String eventRequester = cursor.getString(EventDbManager.COL_REQUESTER);
+            Log.i(TAG, "Check Requester: " + eventRequester);
         /////Save to List
             FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
                     category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates,
-                    distance, eventScore);
+                    distance, eventScore, eventRequester);
             eventsList.add(newFonoEvent);
         }
 
@@ -157,14 +127,14 @@ public class EventScorer {
     }
 
 
-    public void bulkReScore(Context context) {
+    public void bulkReScore(Context context, String requester) {
 
         Log.i(TAG, "scoreEvents: Scoring Events");
         //// Pull all events
         List<FonoEvent> eventsList = getEventsList(context);
         ////ReInsert Events
         EventDbManager eventDbManager = new EventDbManager(context);
-        eventDbManager.createDbTable(eventsList);
+        eventDbManager.deleteAndInsertEvents(requester, eventsList);
 
     }
 }

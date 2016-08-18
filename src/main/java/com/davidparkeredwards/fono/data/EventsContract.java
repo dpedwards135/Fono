@@ -46,7 +46,7 @@ public class EventsContract {
         public static final String COLUMN_DOWNLOAD_DATE = "DOWNLOAD_DATE";
         public static final String COLUMN_EVENT_SCORE = "EVENT_SCORE";
         public static final String COLUMN_DISTANCE = "DISTANCE";
-        public static final String COLUMN_CONTEXT = "CONTEXT";
+        public static final String COLUMN_REQUESTER = "REQUESTER";
 
         public static Uri buildEventsUriWithId(long id) {
             return ContentUris.withAppendedId(CONTENT_URI, id);

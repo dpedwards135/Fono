@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
+import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
 
 /**
@@ -21,11 +22,13 @@ public class EventsAdapter extends CursorAdapter {
 
     private String convertCursorRowToUxFormat(Cursor cursor) {
 
-        return cursor.getString(ResultsFragment.COL_NAME)
-                + "\n" + cursor.getString(ResultsFragment.COL_VENUE_NAME)
-                + "\n" + cursor.getString(ResultsFragment.COL_EVENT_SCORE)
-                + "\n" + Long.toString(cursor.getLong(ResultsFragment.COL_ID))
-                + "\n" + Long.toString(cursor.getLong(ResultsFragment.COL_DISTANCE));
+        return cursor.getString(EventDbManager.COL_NAME)
+                + "\n" + cursor.getString(EventDbManager.COL_VENUE_NAME)
+                + "\n" + cursor.getString(EventDbManager.COL_EVENT_SCORE)
+                + "\n" + Long.toString(cursor.getLong(EventDbManager.COL_ID))
+                + "\n" + Long.toString(cursor.getLong(EventDbManager.COL_DISTANCE))
+                + "\n" + cursor.getString(EventDbManager.COL_REQUESTER);
+
     }
 
     @Override

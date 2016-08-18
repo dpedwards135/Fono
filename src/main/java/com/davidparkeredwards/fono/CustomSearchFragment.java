@@ -1,5 +1,6 @@
 package com.davidparkeredwards.fono;
 
+import android.app.usage.UsageEvents;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
@@ -17,8 +18,10 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.ListView;
 
+import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
 
 
@@ -27,39 +30,14 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     private static final int EVENTS_LOADER = 0;
 
 
-    private static final String[] EVENTS_COLUMNS = {
-            EventsContract.EventEntry.TABLE_NAME + "." + EventsContract.EventEntry._ID,
-            EventsContract.EventEntry.COLUMN_NAME,
-            EventsContract.EventEntry.COLUMN_DESCRIPTION,
-            EventsContract.EventEntry.COLUMN_REQUEST_COORDINATES,
-            EventsContract.EventEntry.COLUMN_LOCATION_COORDINATES,
-            EventsContract.EventEntry.COLUMN_VENUE_NAME,
-            EventsContract.EventEntry.COLUMN_ADDRESS,
-            EventsContract.EventEntry.COLUMN_CATEGORY_1,
-            EventsContract.EventEntry.COLUMN_CATEGORY_2,
-            EventsContract.EventEntry.COLUMN_CATEGORY_3,
-            EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN,
-            EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE,
-            EventsContract.EventEntry.COLUMN_EVENT_SCORE,
-            EventsContract.EventEntry.COLUMN_DISTANCE,
-    };
-
-    static final int COL_ID = 0;
-    static final int COL_NAME = 1;
-    static final int COL_DESCRIPTION = 2;
-    static final int COL_REQUEST_COORDINATES = 3;
-    static final int COL_LOCATION_COORDINATES = 4;
-    static final int COL_VENUE_NAME = 5;
-    static final int COL_ADDRESS = 6;
-    static final int COL_CATEGORY_1 = 7;
-    static final int COL_CATEGORY_2 = 8;
-    static final int COL_CATEGORY_3 = 9;
-    static final int COL_LINK_TO_ORIGIN = 10;
-    static final int COL_DOWNLOAD_DATE = 11;
-    static final int COL_EVENT_SCORE = 12;
-    static final int COL_DISTANCE = 13;
-
     private EventsAdapter eventsAdapter;
+
+    private View.OnClickListener customSearchListener = new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+            customEventRequest();
+        }
+    };
 
     public CustomSearchFragment() {}
 
@@ -92,14 +70,23 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
                 Cursor cursor = (Cursor) parent.getItemAtPosition(position);
                 if (cursor != null) {
                     Intent intent = new Intent(getActivity(), EventDetail.class)
-                            .setData(EventsContract.EventEntry.buildEventsUriWithId(cursor.getLong(COL_ID)));
+                            .setData(EventsContract.EventEntry.buildEventsUriWithId(cursor.getLong(EventDbManager.COL_ID)));
                     startActivity(intent);
                 }
             }
         });
 
+        Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
+        customSearchButton.setOnClickListener(customSearchListener);
+
+
         return rootView;
 
+    }
+
+    public void customEventRequest() {
+        EventRequest customEventRequest = new EventRequest(getContext(), "", "", EventDbManager.CUSTOM_SEARCH_REQUEST, "Salt Lake");
+        customEventRequest.execute();
     }
 
     @Override
@@ -121,13 +108,16 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Sort Order if desired
+        String selection = EventsContract.EventEntry.COLUMN_REQUESTER + "=?";
+        String[] selectionArgs = new String[] {EventDbManager.CUSTOM_SEARCH_REQUEST};
+
         String sortOrder = EventsContract.EventEntry.COLUMN_EVENT_SCORE + " DESC";
         Uri eventsUri = EventsContract.EventEntry.CONTENT_URI;
         return new CursorLoader(getActivity(),
                 eventsUri,
-                EVENTS_COLUMNS,
-                null,
-                null,
+                EventDbManager.EVENTS_COLUMNS,
+                selection,
+                selectionArgs,
                 sortOrder);
     }
 
