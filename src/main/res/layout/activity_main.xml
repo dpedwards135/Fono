@@ -11,33 +11,37 @@
     android:layout_gravity="center"
     tools:context="com.davidparkeredwards.fono.MainActivity">
 
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="40dp">
 
-    <TextView
+        <TextView
 
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="FONO Events"
-        android:textSize="30dp"
-        android:id="@+id/locDisplay"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Get Events"
-        android:onClick="launchEventfulResults"
-        android:textSize="30dp" />
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="FONO Events"
+            android:id="@+id/locDisplay"/>
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="E"
+            android:onClick="launchEventfulResults"
+             />
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Set Preferences"
-        android:onClick="launchPreferences"
-        android:textSize="30dp" />
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Custom Search"
-        android:onClick="launchCustomSearch"
-        android:textSize="30dp" />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="P"
+            android:onClick="launchPreferences"
+             />
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="CS"
+            android:onClick="launchCustomSearch"
+             />
+    </LinearLayout>
+
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

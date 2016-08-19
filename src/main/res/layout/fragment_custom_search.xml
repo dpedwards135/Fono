@@ -5,42 +5,18 @@
     android:layout_height="match_parent"
     tools:context="com.davidparkeredwards.fono.CustomSearchFragment">
 
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    <LinearLayout
-        android:orientation="vertical"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Keywords"
-        android:id="@+id/customKeywords"/>
-    <EditText
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Location"
-        android:id="@+id/customLocation"/>
-    <DatePicker
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:id="@+id/customDatePicker"
-        android:calendarViewShown="false"
-        android:datePickerMode="spinner"
-        />
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Search"
-        android:onClick="customEventSearch"
-        android:id="@+id/customSearchButton"/>
+        android:id="@+id/searchToggle"
+        android:text="Open PopUp"/>
 
     <ListView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/custom_search_list_view">
     </ListView>
-    </LinearLayout>
-    </ScrollView>
+
+
+
 </LinearLayout>

@@ -1,17 +1,23 @@
 package com.davidparkeredwards.fono;
 
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.usage.UsageEvents;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.content.Loader;
+import android.support.v4.widget.PopupWindowCompat;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -24,6 +30,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.PopupWindow;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
@@ -54,45 +61,46 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     List<FonoEventScored> listViewInfo;
     //private EventsAdapter eventsAdapter;
     ArrayAdapter<FonoEventScored> arrayAdapter;
-    private View.OnClickListener customSearchListener = new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-            customEventRequest();
-        }
-    };
 
-    DatePicker datePicker;
+
     public CustomSearchFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setHasOptionsMenu(true);
     }
-
-/*  Put Menu items here
-    @Override
- *   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
- *       inflater.inflate(R.menu.eventsfragment, menu);
- *
- */
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //eventsAdapter = new EventsAdapter(getActivity(), null, 0);
-
-        arrayAdapter = new ArrayAdapter<FonoEventScored>(getActivity(), R.layout.list_item_events);
+        //Set view settings
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
+        View searchToggle = rootView.findViewById(R.id.searchToggle);
+        //Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
+
+        View.OnClickListener searchToggleListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                SearchDialogFragment newSDF = new SearchDialogFragment();
+                android.app.FragmentManager fm = getActivity().getFragmentManager();
+                newSDF.show(fm, "Search Dialog");
+
+            }
+        };
+        searchToggle.setOnClickListener(searchToggleListener);
+
+
+        arrayAdapter = new ArrayAdapter<FonoEventScored>(getActivity(), R.layout.list_item_events);
+
 
         listView.setAdapter(arrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-               // ((ListView) parent).getItemAtPosition(position);
+                // ((ListView) parent).getItemAtPosition(position);
                 Log.i("OnListViewClick", "position: " + position);
                 int _id = listViewInfo.get(position).getId();
                 Log.i("OnListViewClick", "_id: " + _id);
@@ -102,16 +110,22 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             }
         });
 
-
+    return rootView;
 /*
                     Intent intent = new Intent(getActivity(), EventDetail.class);
 
                     startActivity(intent);
 */
 
-
+/*
         //Set onClickListener to Search  Button
-        Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
+
+        View.OnClickListener customSearchListener = new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                customEventRequest();
+            }
+        };
         customSearchButton.setOnClickListener(customSearchListener);
 
         //Set MinDate to DatePicker
@@ -124,8 +138,9 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     }
 
-    public void customEventRequest() {
 
+    public void customEventRequest() {
+        setSearchBoxVisibility();
 
         //Format date for JSON = YYYYMMDD00-YYYYMMDD00
         int day =datePicker.getDayOfMonth();
@@ -163,7 +178,9 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
                 EventDbManager.CUSTOM_SEARCH_REQUEST, customLocation);
         customEventRequest.execute();
     }
+*/
 
+    }
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         getLoaderManager().initLoader(EVENTS_LOADER,null,this);

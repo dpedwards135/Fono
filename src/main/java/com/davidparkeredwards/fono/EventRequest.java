@@ -210,7 +210,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                     dateString = "&date=Today";
                     break;
                 case EventDbManager.CUSTOM_SEARCH_REQUEST:
-                    if(customLocation == "") {
+                    if(customLocation.length()<2 || customLocation.isEmpty()) {
                         locationString = "&where=" + coordinates;
                     } else {
                         locationString = "&location=" + customLocationFormatted;
@@ -220,7 +220,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                     } else {
                         dateString = "&date=" + date;
                     }
-                    keywordString = "&keywords=" + "music"; //+keywordsFormatted
+                    keywordString = "&keywords=" + keywordsFormatted;
 
         }
         return locationString + radiusString + dateString + keywordString;
