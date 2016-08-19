@@ -33,11 +33,25 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+
+/* Next:
+ * Set up array to properly sort
+ * Create and hook up sort by radio buttons
+ * Apply changes to ResultsFragment
+ * Take a break
+ * Build Layout:
+ *  Main Activity Frame
+ *  Search popout
+ *  ListViews
+ *  EventDetail
+ * Add mapView to EventDetail
+ * Add navigation intent
+ */
 public class CustomSearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EVENTS_LOADER = 0;
     private View rootView;
-
+    List<FonoEventScored> listViewInfo;
     //private EventsAdapter eventsAdapter;
     ArrayAdapter<FonoEventScored> arrayAdapter;
     private View.OnClickListener customSearchListener = new View.OnClickListener() {
@@ -74,17 +88,27 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
 
         listView.setAdapter(arrayAdapter);
+
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Cursor cursor = (Cursor) parent.getItemAtPosition(position);
-                if (cursor != null) {
-                    Intent intent = new Intent(getActivity(), EventDetail.class)
-                            .setData(EventsContract.EventEntry.buildEventsUriWithId(cursor.getLong(EventDbManager.COL_ID)));
-                    startActivity(intent);
-                }
+               // ((ListView) parent).getItemAtPosition(position);
+                Log.i("OnListViewClick", "position: " + position);
+                int _id = listViewInfo.get(position).getId();
+                Log.i("OnListViewClick", "_id: " + _id);
+                Intent intent = new Intent(getActivity(), EventDetail.class)
+                        .setData(EventsContract.EventEntry.buildEventsUriWithId(_id));
+                startActivity(intent);
             }
         });
+
+
+/*
+                    Intent intent = new Intent(getActivity(), EventDetail.class);
+
+                    startActivity(intent);
+*/
+
 
         //Set onClickListener to Search  Button
         Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
@@ -176,7 +200,12 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         //eventsAdapter.swapCursor(cursor);
         //Swap ArrayAdapter with new adapter
         EventDbManager eventDbManager = new EventDbManager(getContext());
-        List<FonoEventScored> listViewInfo = eventDbManager.getEventsScoredArray(cursor);
+        listViewInfo = eventDbManager.getEventsScoredArray(cursor);
+        if(listViewInfo.size()>0) {
+            Log.i("onLoadFinished", "String Check: " + listViewInfo.get(0).toString() +
+                    "\n" + "Name of first listViewInfo Event: " + listViewInfo.get(0).getName() +
+                    "\n" + "Size of listViewInfo = " + listViewInfo.size());
+        }
         arrayAdapter.clear();
         arrayAdapter.addAll(listViewInfo);
     }
@@ -184,13 +213,8 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
 
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        //eventsAdapter.swapCursor(null);
-        //And here
-        /*EventDbManager eventDbManager = new EventDbManager(getContext());
-        List<FonoEventScored> listViewInfo = eventDbManager.getEventsScoredArray(cursor);
-        arrayAdapter.clear();
-        arrayAdapter.addAll(listViewInfo);
-        */
+        arrayAdapter.notifyDataSetChanged();
+        Log.i("onLoaderReset", "Loader Reset");
     }
 }
 
