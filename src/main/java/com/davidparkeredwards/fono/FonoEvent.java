@@ -147,6 +147,6 @@ public class FonoEvent {
     }
 
     public String toString() {
-        return this.name + "\n" + this.venueName;
+        return this.name + "\n" + this.venueName + "\n" + this.address;
     }
 }

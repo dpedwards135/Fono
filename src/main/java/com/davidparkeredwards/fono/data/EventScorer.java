@@ -118,8 +118,7 @@ public class EventScorer {
             Log.i(TAG, "Check Requester: " + eventRequester);
         /////Save to List
             FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
-                    category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates,
-                    distance, eventScore, eventRequester);
+                    category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates, eventRequester);
             eventsList.add(newFonoEvent);
         }
 

@@ -33,15 +33,13 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-// Next - Create input fields that store values to be passed to EventRequest - Keywords, date, location
-
 public class CustomSearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EVENTS_LOADER = 0;
     private View rootView;
 
-    private EventsAdapter eventsAdapter;
-    ArrayAdapter<FonoEvent> arrayAdapter;
+    //private EventsAdapter eventsAdapter;
+    ArrayAdapter<FonoEventScored> arrayAdapter;
     private View.OnClickListener customSearchListener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
@@ -68,13 +66,14 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        eventsAdapter = new EventsAdapter(getActivity(), null, 0);
+        //eventsAdapter = new EventsAdapter(getActivity(), null, 0);
 
+        arrayAdapter = new ArrayAdapter<FonoEventScored>(getActivity(), R.layout.list_item_events);
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
 
-        listView.setAdapter(eventsAdapter);
+        listView.setAdapter(arrayAdapter);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -174,7 +173,7 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
 
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        eventsAdapter.swapCursor(cursor);
+        //eventsAdapter.swapCursor(cursor);
         //Swap ArrayAdapter with new adapter
         EventDbManager eventDbManager = new EventDbManager(getContext());
         List<FonoEventScored> listViewInfo = eventDbManager.getEventsScoredArray(cursor);
@@ -185,10 +184,13 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
 
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
-        eventsAdapter.swapCursor(null);
+        //eventsAdapter.swapCursor(null);
         //And here
-
-
+        /*EventDbManager eventDbManager = new EventDbManager(getContext());
+        List<FonoEventScored> listViewInfo = eventDbManager.getEventsScoredArray(cursor);
+        arrayAdapter.clear();
+        arrayAdapter.addAll(listViewInfo);
+        */
     }
 }
 
