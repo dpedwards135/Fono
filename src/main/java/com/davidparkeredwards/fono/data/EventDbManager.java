@@ -138,10 +138,10 @@ public class EventDbManager {
 
     }
 
-    public List<FonoEventScored> getEventsScoredArray(Cursor cursor) {
+    public List<FonoEvent> getEventsArray(Cursor cursor) {
 
         //Used to create Lists for ArrayAdapters, given a cursor from a cursor loader.
-        List<FonoEventScored> listViewInfo = new ArrayList<>();
+        List<FonoEvent> listViewInfo = new ArrayList<>();
 
         while (cursor.moveToNext()) {
             //Pull info desired to display in ListView and add to listViewInfo. Be sure to add ID
@@ -160,11 +160,11 @@ public class EventDbManager {
             String downloadDate = cursor.getString(EventDbManager.COL_DOWNLOAD_DATE);
             String requester = cursor.getString(EventDbManager.COL_REQUESTER);
 
-            FonoEventScored fonoEventScored = new FonoEventScored(name, downloadDate, venueName, address, description,
+            FonoEvent fonoEvent = new FonoEvent(name, downloadDate, venueName, address, description,
                     category1, category2, category3, linkToOrigin, _id, locationCoordinates, requestCoordinates,
                     requester);
 
-            listViewInfo.add(fonoEventScored);
+            listViewInfo.add(fonoEvent);
             /* Remove these from all DB operations:
                     EventsContract.EventEntry.COLUMN_EVENT_SCORE,
                     EventsContract.EventEntry.COLUMN_DISTANCE,

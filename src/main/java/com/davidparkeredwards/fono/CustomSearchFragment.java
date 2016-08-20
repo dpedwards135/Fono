@@ -37,6 +37,9 @@ import com.davidparkeredwards.fono.data.EventsContract;
 import com.davidparkeredwards.fono.data.FonoEventScored;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 
@@ -58,10 +61,11 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     private static final int EVENTS_LOADER = 0;
     private View rootView;
-    List<FonoEventScored> listViewInfo;
+    List<FonoEvent> listViewInfo;
     //private EventsAdapter eventsAdapter;
     ArrayAdapter<FonoEventScored> arrayAdapter;
-
+    String requester;
+    List<FonoEventScored> listViewInfoScored;
 
     public CustomSearchFragment() {}
 
@@ -74,10 +78,14 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         //Set view settings
+        requester = getArguments().getString("Requester");
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
 
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
         View searchToggle = rootView.findViewById(R.id.searchToggle);
+        if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
+            searchToggle.setVisibility(View.GONE);
+        }
         //Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
 
         View.OnClickListener searchToggleListener = new View.OnClickListener() {
@@ -102,8 +110,11 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // ((ListView) parent).getItemAtPosition(position);
                 Log.i("OnListViewClick", "position: " + position);
-                int _id = listViewInfo.get(position).getId();
-                Log.i("OnListViewClick", "_id: " + _id);
+                int wrongId = arrayAdapter.getItem(position).getId();
+                int _id = listViewInfoScored.get(position).getId();
+                Log.i("OnListViewClick", "_id: " + _id +
+                        "\nWrongID: " +wrongId);
+
                 Intent intent = new Intent(getActivity(), EventDetail.class)
                         .setData(EventsContract.EventEntry.buildEventsUriWithId(_id));
                 startActivity(intent);
@@ -200,7 +211,7 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
         // Sort Order if desired
         String selection = EventsContract.EventEntry.COLUMN_REQUESTER + "=?";
-        String[] selectionArgs = new String[] {EventDbManager.CUSTOM_SEARCH_REQUEST};
+        String[] selectionArgs = new String[] {requester};
 
         String sortOrder = EventsContract.EventEntry.COLUMN_EVENT_SCORE + " DESC";
         Uri eventsUri = EventsContract.EventEntry.CONTENT_URI;
@@ -214,19 +225,57 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
 
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-        //eventsAdapter.swapCursor(cursor);
-        //Swap ArrayAdapter with new adapter
+
+        //1. Get FonoEvents Array, unscored
+        //2. Score the array
+        //3. Reattach to arrayAdapter
         EventDbManager eventDbManager = new EventDbManager(getContext());
-        listViewInfo = eventDbManager.getEventsScoredArray(cursor);
+        listViewInfo = eventDbManager.getEventsArray(cursor);
         if(listViewInfo.size()>0) {
             Log.i("onLoadFinished", "String Check: " + listViewInfo.get(0).toString() +
                     "\n" + "Name of first listViewInfo Event: " + listViewInfo.get(0).getName() +
                     "\n" + "Size of listViewInfo = " + listViewInfo.size());
+            scoreAndProcessEvents(listViewInfo);
         }
-        arrayAdapter.clear();
-        arrayAdapter.addAll(listViewInfo);
+
+
+
     }
 
+    public void scoreAndProcessEvents(List<FonoEvent> listViewInfo) {
+
+        Log.i("scoreAndProcessEvents", "Attempting to score");
+        listViewInfoScored = new ArrayList<>();
+        for (FonoEvent fonoEvent : listViewInfo) {
+            FonoEventScored fonoEventScored = new FonoEventScored(
+                    fonoEvent.getName(),
+                    fonoEvent.getDate(),
+                    fonoEvent.getVenueName(),
+                    fonoEvent.getAddress(),
+                    fonoEvent.getDescription(),
+                    fonoEvent.getCategory_1(),
+                    fonoEvent.getCategory_2(),
+                    fonoEvent.getCategory_3(),
+                    fonoEvent.getLinkToOrigin(),
+                    fonoEvent.getId(),
+                    fonoEvent.getLocationCoordinates(),
+                    fonoEvent.getRequestCoordinates(),
+                    fonoEvent.getRequester()
+            );
+            listViewInfoScored.add(fonoEventScored);
+            Log.i("scoreAndProcessEvents", "FES Score: " + fonoEventScored.getEventScore());
+        }
+
+        Collections.sort(listViewInfoScored, new Comparator<FonoEventScored>() {
+            @Override
+            public int compare(FonoEventScored lhs, FonoEventScored rhs) {
+                return Double.compare(rhs.getEventScore(), lhs.getEventScore());
+            }});
+        arrayAdapter.clear();
+
+        arrayAdapter.addAll(listViewInfoScored);
+        arrayAdapter.notifyDataSetChanged();
+    }
 
 
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
@@ -234,4 +283,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         Log.i("onLoaderReset", "Loader Reset");
     }
 }
+
+//////////Need to figure out how to get events ranking in the order they already have.
 

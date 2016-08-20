@@ -68,8 +68,8 @@ public class PreferencesFragment extends Fragment {
 
         preferencesText.setText("Select Event Radius and Categories");
 
-        Button savePreferencesButton = (Button) rootView.findViewById(R.id.save_preferences);
-        savePreferencesButton.setOnClickListener(savePreferencesListener);
+        //Button savePreferencesButton = (Button) rootView.findViewById(R.id.save_preferences);
+        //savePreferencesButton.setOnClickListener(savePreferencesListener);
 
 
 
@@ -141,12 +141,13 @@ public class PreferencesFragment extends Fragment {
         ////Get SharedPreference and save
         SharedPreference sharedPreference = new SharedPreference();
         sharedPreference.saveCategories(getContext(), categorySaveString);
+        Log.i("Preferences", "savePreferences: Categories Saved");
 /*        EventDbManager eventDbManager = new EventDbManager(getContext());
         eventDbManager.scoreEvents();
         Log.i("savePreferences", "savePreferences: Scoring Events");
 */
-        EventScorer eventScorer = new EventScorer();
-        eventScorer.bulkReScore(getContext(), EventDbManager.RADAR_SEARCH_REQUEST);
+        //EventScorer eventScorer = new EventScorer();
+        //eventScorer.bulkReScore(getContext(), EventDbManager.RADAR_SEARCH_REQUEST);
     }
 
     @Override
@@ -166,4 +167,9 @@ public class PreferencesFragment extends Fragment {
     }
 
 
+    @Override
+    public void onDetach() {
+        savePreferences();
+        super.onDetach();
+    }
 }

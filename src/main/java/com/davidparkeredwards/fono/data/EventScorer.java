@@ -60,8 +60,15 @@ public class EventScorer {
         Set<String> categoriesList = sharedPreference.getCategoriesList(context);
         double score = 0;
 
-        //Get Score for distance; Change the 30 for radius number later
-        double milesScore = 30 - distance;
+        /*Scores = Tiered so that all the preferred categories are at the top, with null
+          descriptions at the bottom, then everything else, ranked by distance. This is done
+          by using differences of a magnitude for each score element.
+          Preference Categories = +1000
+          NotNull Description = +100
+          Distance = (0-distance/1000) - Few places on earth where this will be more than |10|
+        */
+        //Get Score for distance
+        double milesScore = 0 - (distance/1000);
         score = score + milesScore;
         Log.i(TAG, "Check Cat List: " + categoriesList.toString());
 
@@ -69,14 +76,15 @@ public class EventScorer {
         if (description.matches("null")) {
             score = score + 0;
         } else {
-            score = score + 10;
+            score = score + 100;
         }
 
         ////Check category score and finalize score
         if (categoriesList.contains(category1) ||
                 categoriesList.contains(category2) ||
                 categoriesList.contains(category3)) {
-            score = score + 10;
+            score = score + 1000;
+            Log.i(TAG, "It has events that are in check list");
         }
 
         ///////Check score
@@ -125,6 +133,9 @@ public class EventScorer {
         return eventsList;
     }
 
+    /* Approach to scoring:
+     *
+     */
 
     public void bulkReScore(Context context, String requester) {
 

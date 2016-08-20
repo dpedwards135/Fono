@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
 
+import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.sync.FonoSyncAdapter;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
@@ -46,7 +47,12 @@ public class MainActivity extends AppCompatActivity  {
         fonoSyncAdapter.initializeSyncAdapter(this);
         fonoSyncAdapter.syncImmediately(this);
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction().add(R.id.mainActivityContainer, new ResultsFragment()).commit();
+            Bundle radarBundle = new Bundle();
+            radarBundle.putString("Requester", EventDbManager.RADAR_SEARCH_REQUEST);
+            Fragment fragment = new CustomSearchFragment();
+            fragment.setArguments(radarBundle);
+            getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
+                    fragment).commit();
         }
 
 
@@ -54,11 +60,21 @@ public class MainActivity extends AppCompatActivity  {
 
 
     public void launchCustomSearch(View view) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new CustomSearchFragment()).commit();
+        Bundle radarBundle = new Bundle();
+        radarBundle.putString("Requester", EventDbManager.CUSTOM_SEARCH_REQUEST);
+        Fragment fragment = new CustomSearchFragment();
+        fragment.setArguments(radarBundle);
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
+                fragment).commit();
     }
 
     public void launchEventfulResults(View view) {
-        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new ResultsFragment()).commit();
+        Bundle radarBundle = new Bundle();
+        radarBundle.putString("Requester", EventDbManager.RADAR_SEARCH_REQUEST);
+        Fragment fragment = new CustomSearchFragment();
+        fragment.setArguments(radarBundle);
+        getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
+                fragment).commit();
     }
 
     public void launchPreferences(View view) {
