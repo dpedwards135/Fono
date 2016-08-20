@@ -1,262 +1,201 @@
 package com.davidparkeredwards.fono;
 
 import android.content.Context;
-import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteException;
-import android.database.sqlite.SQLiteOpenHelper;
 import android.location.Location;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import android.os.Process;
 import android.support.annotation.NonNull;
 import android.util.Log;
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 
-import com.davidparkeredwards.fono.data.EventDbHelper;
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventScorer;
 import com.davidparkeredwards.fono.data.SharedPreference;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.drive.query.internal.LogicalFilter;
 import com.google.android.gms.location.LocationServices;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.prefs.PreferenceChangeListener;
 
-/* Need to take scoring function out, add it to listView adapters
- * 1. Convert EventAdapters to ArrayAdapters that take an array pulled from DB
- * 2. Keep CursorLoaders in place, load
- *
+/**
+ * Created by User on 8/20/2016.
  */
+public class EventRequest extends AsyncTask<Void, Void, Void>{
 
-public class EventRequest extends AsyncTask<Void, Void, Void> {
+    //Variables needed to run Eventful API request:
+    Context context;
+    String location; //Coordinates or city name - If this is blank, automatically supply current location
+    String keywords; //Blank is okay
+    String date; // If this is blank, automatically supply today's date
+    String requester; //Required
 
-    //1. Get Center Location, 2. Pull events, 3. Update content provider
-    private Context context;
-    String date;
-    String keywords = "";
-    String coordinates;
-    String requester;
-    String customLocation = "";
+    //Variables generated and used within class
     String todayDate;
-    String oldCoordinates;
-    String oldDate;
+    String locationRequestSubmitted;
+    URL baseJsonUrl;
+    double totalItems;
 
-    public EventRequest(Context context, String date, String keywords, String requester, String customLocation) {
+    //JSON Request String Elements
+
+
+    public EventRequest(Context context, String location, String keywords, String date, String requester) {
         this.context = context;
-        this.date = date;
+        this.location = location;
         this.keywords = keywords;
+        this.date = date;
         this.requester = requester;
-        this.customLocation = customLocation;
     }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        //EventDbManager eventDbManager = new EventDbManager(context);
-        //eventDbManager.scoreEvents();
+        for(int i = 1; i <= Math.ceil(totalItems/100); i++) {
+            GetAndSaveEvents getAndSaveEvents = new GetAndSaveEvents(context, totalItems, i, baseJsonUrl, locationRequestSubmitted, requester);
+            getAndSaveEvents.executeOnExecutor(THREAD_POOL_EXECUTOR);
+        }
 
-        Log.i("Event Request", "Event Request Background thread complete");
+        if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
+            saveSyncDateAndLocation();
+        }
+
+        Log.i("OnPostExecute", "Event Request Task Finished");
 
     }
-
-
 
     @Override
     protected Void doInBackground(Void... params) {
-        //Get location and date variables
-        getArguments();
-        //Check if new Events Request necessary, end if not needed
-        if (!checkSyncNeed()) {
+
+
+        if(requester==EventDbManager.CUSTOM_SEARCH_REQUEST) {
+            android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND + Process.THREAD_PRIORITY_MORE_FAVORABLE);
+        } else {
+            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND + Process.THREAD_PRIORITY_LESS_FAVORABLE);
+        }
+
+        getLocationRequestSubmitted();
+        if (requester == EventDbManager.RADAR_SEARCH_REQUEST && !requiresSync()) {
+            //End Sync Process if not required
             return null;
         }
-        //If sync is needed:
-        // Create JSON String, query API, parse FonoEvents, save to list
-        List<FonoEvent> eventsList = new ArrayList<>();
-
         try {
-            double totalPages = 1;
-            double parsedPages = 0;
-
-            while (parsedPages < totalPages) {
-                String jsonString = getJsonString(coordinates, parsedPages + 1);
-                Log.i("JSON Parse Loop", "jsonString readout: " + jsonString);
-                totalPages = getTotalPages(jsonString);
-                eventsList.addAll(parseJsonString(jsonString));
-                parsedPages += 1;
-                Log.i("JSON Parse Loop", "Cycle: " + parsedPages + ", " + totalPages);
-                Log.i("JSON Parse Loop", "Events in eventsList: " + eventsList.size());
-            }
-        } catch (JSONException e) {
-                Log.i("JSONString to List", "Unable to parse JSON string");
-                return null;
-
+            baseJsonUrl = getBaseJsonUrl();
+        } catch (MalformedURLException e) {
+            Log.i("doInBackground", "Malformed URL");
         }
+        getTotalItemQuantity(baseJsonUrl);
 
-        //Save Events to contentProvider
+        Log.i("EventRequest", "Total Items = " + totalItems);
+
         EventDbManager dbManager = new EventDbManager(context);
-        //dbManager.deleteAndInsertEvents(requester, eventsList);
-        try {
-            dbManager.deleteEventRecords(requester);
-            dbManager.bulkInsert(eventsList);
-
-        }
-        catch (SQLiteException e) {
-            Log.i("Event Request", "Unable to get DB to delete and save new events" );
-        }
-
-            //if Radar Request and did not return empty, save the sync date to avoid unnecessary syncs
-        if(requester.equals(EventDbManager.RADAR_SEARCH_REQUEST) || eventsList.size() > 0) {
-
-            SharedPreference sharedPreference = new SharedPreference();
-            sharedPreference.save(context, coordinates, SharedPreference.PREFS_LOCATION_KEY);
-            sharedPreference.save(context, date, SharedPreference.PREFS_SYNC_DATE_KEY);
-        }
-
-
+        dbManager.deleteEventRecords(requester);
         return null;
-
     }
 
-
-    public boolean checkSyncNeed() {
-        //Check if sync is needed: Has date or location changed since last sync?
-        switch (requester) {
-            //Run sync for every Custom Search
-            case EventDbManager.CUSTOM_SEARCH_REQUEST:
-                Log.i("Check Sync Need", requester + " sync needed");
-                return true;
-            //Only run sync if something has changed for Radar Search Sync
-            case EventDbManager.RADAR_SEARCH_REQUEST:
-                if (date.equals(oldDate) && coordinates.equals(oldCoordinates)) {
-                    Log.i("Check Sync Need",
-                            "No Sync - Requester: " + requester + ", " +
-                                    oldDate + date + ", " +
-                                    oldCoordinates + coordinates);
-                    return false;
-                } else {
-                    Log.i("Check Sync Need",
-                            "Perform Sync - Requester: " + requester + ", " +
-                                    oldDate + date + ", " +
-                                    oldCoordinates + coordinates);
-                    return true;
-                }
-
-        }
-        Log.i("Check Sync Need", "Reached end of Sync need without case reached - Perform Sync");
-        return true;
-    }
-
-    public void getArguments() {
-
-        //Pulls remaining arguments: dates and request locations
-        SharedPreference sharedPreference = new SharedPreference();
-        Log.i("SPCheck", "doInBackground: " + sharedPreference.getValue(context, SharedPreference.PREFS_LOCATION_KEY));
-        oldCoordinates = sharedPreference.getValue(context, SharedPreference.PREFS_LOCATION_KEY);
-        oldDate = sharedPreference.getValue(context, SharedPreference.PREFS_SYNC_DATE_KEY);
-        Date today = new Date();
-        todayDate =
-                Integer.toString(today.getMonth()) +
-                        Integer.toString(today.getDate()) +
-                        Integer.toString(today.getHours());
-        Log.i("Change Preferences", "doInBackground: " + oldCoordinates + ", " + date + ", " + oldDate);
+    protected void getLocationRequestSubmitted() {
         LocationIdentifier locationIdentifier = new LocationIdentifier();
         locationIdentifier.openConnection();
         int ms = 0;
-        while (coordinates == null) {
+        while (locationRequestSubmitted == null) {
             ms += 1;
         }
-        Log.i("Do In Background", "MS to return location: " + ms);
-        Log.i("Background", "doInBackground: " + coordinates);
     }
 
-    public String getRequestVariables() {
+    protected boolean requiresSync() {
+        //Get Today's Date:
+        Date today = new Date();
+        todayDate = Integer.toString(today.getMonth()) +
+                        Integer.toString(today.getDate()) +
+                        Integer.toString(today.getHours());
 
+        //Get last sync location and date
+        SharedPreference sharedPreference = new SharedPreference();
+        String lastSyncLocation = sharedPreference.getLastSyncLocation(context);
+        String lastSyncDate = sharedPreference.getLastSyncDate(context);
+        EventScorer eventScorer = new EventScorer();
+        double milesBetweenSyncs = eventScorer.calculateDistance(lastSyncLocation, locationRequestSubmitted);
+
+        if(lastSyncDate.equals(todayDate) && milesBetweenSyncs < 3) {
+            Log.i("Sync?", "Does not need Sync. Now: " + todayDate + " LastSync: " + lastSyncDate +
+                    "\nHere: " + locationRequestSubmitted + " LastSyncLocation: " + lastSyncLocation
+                    +"\nMilesBetweenSyncs: " + milesBetweenSyncs
+            );
+            return false;
+        } else
+            Log.i("Sync?", "Needs Sync. Now: " + todayDate + " LastSync: " + lastSyncDate +
+                    "\nHere: " + locationRequestSubmitted + " LastSyncLocation: " + lastSyncLocation
+                    +"\nMilesBetweenSyncs: " + milesBetweenSyncs
+            );
+            return true;
+        }
+
+    protected URL getBaseJsonUrl() throws MalformedURLException{
+
+
+        String variableString = "Variable String Broken";
         String radiusString = "&within=25"; //Radius in which to search for events, presently hard-coded
         String locationString = "";
         String keywordString = "";
         String dateString = "";
-        //Format customLocation to replace spaces with +
-        String customLocationFormatted = customLocation.replaceAll(" ", "+");
+        //Format location and keywords to replace spaces with +
+        String locationFormatted = location.replaceAll(" ", "+");
         String keywordsFormatted = keywords.replaceAll(" ", "+");
-        Log.i("Format Location", "newCustomLocation: " + customLocationFormatted);
+
         switch (requester) {
-                case EventDbManager.RADAR_SEARCH_REQUEST :
-                    locationString = "&where=" + coordinates;
-                    keywordString = "";
+            case EventDbManager.RADAR_SEARCH_REQUEST :
+                locationString = "&where=" + locationRequestSubmitted;
+                keywordString = "";
+                dateString = "&date=Today";
+                variableString = locationString + radiusString + dateString + keywordString;
+                break;
+            case EventDbManager.CUSTOM_SEARCH_REQUEST:
+                //Assign locationRequestSubmitted to location if none supplied by CustomSearch
+                if(location.isEmpty()) {
+                    locationString = "&where=" + locationRequestSubmitted;
+                } else {
+                    locationString = "&location=" + locationFormatted;
+                }
+                //Assign today's date if none supplied by customSearch
+                if(date.isEmpty()) {
                     dateString = "&date=Today";
-                    break;
-                case EventDbManager.CUSTOM_SEARCH_REQUEST:
-                    if(customLocation.length()<2 || customLocation.isEmpty()) {
-                        locationString = "&where=" + coordinates;
-                    } else {
-                        locationString = "&location=" + customLocationFormatted;
-                    }
-                    if(date == "") {
-                        dateString = "&date=Today";
-                    } else {
-                        dateString = "&date=" + date;
-                    }
-                    keywordString = "&keywords=" + keywordsFormatted;
-
+                } else {
+                    dateString = "&date=" + date;
+                }
+                keywordString = "&keywords=" + keywordsFormatted;
+                variableString = locationString + radiusString + dateString + keywordString;
+                break;
+            default:
+                Log.i("Switch", "Went to default");
+                break;
         }
-        return locationString + radiusString + dateString + keywordString;
+        URL baseJsonUrl = new URL("http://api.eventful.com/json/events/search?..." +
+                variableString +
+                "&app_key=w732ztLVhvrG9DN8" +
+                "&include=categories");
+        return baseJsonUrl;
     }
 
-    public double getTotalPages(String jsonString)
-        throws JSONException {
+    protected void getTotalItemQuantity(URL baseJsonUrl) {
 
-        double totalPages;
-        JSONObject eventfulString = new JSONObject(jsonString);
-        double totalItems = Integer.valueOf(eventfulString.getString("total_items"));
-        double pageSize = Integer.valueOf(eventfulString.getString("page_size"));
-        totalPages = Math.ceil(totalItems/pageSize);
-        Log.i("Check getTotal Pages", totalItems + ", " + pageSize);
-
-
-            return totalPages;
-    }
-
-
-    public String getJsonString(String coordinates, double pageNumber) {
-
-        String requestVariables = getRequestVariables();
         HttpURLConnection urlConnection = null;
         BufferedReader reader = null;
         String eventsJsonStr = null;
-        String pageNumberString = Double.toString(pageNumber);
 
         try {
-            URL url = new URL("http://api.eventful.com/json/events/search?..." +
-                    requestVariables +
-                    "&app_key=w732ztLVhvrG9DN8" +
-                    "&include=categories" +
-                    "&page_size=100" +
-                    "&page_number=" + pageNumberString);
-            Log.i("URL", "doInBackground: " + url);
+            URL url = new URL(
+                    baseJsonUrl +
+                            "&page_size=1");
             urlConnection = (HttpURLConnection) url.openConnection();
             urlConnection.setRequestMethod("GET");
             urlConnection.connect();
@@ -264,7 +203,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
             InputStream inputStream = urlConnection.getInputStream();
             StringBuffer buffer = new StringBuffer();
             if (inputStream == null) {
-                return null;
+                return;
             }
             reader = new BufferedReader(new InputStreamReader(inputStream));
 
@@ -275,12 +214,12 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
 
             if (buffer.length() == 0) {
                 // Stream was empty.  No point in parsing.
-                return null;
+                return;
             }
             eventsJsonStr = buffer.toString();
         } catch (IOException e) {
             Log.e("Event Request", "Error ", e);
-            return null;
+            return;
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -294,138 +233,85 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
             }
         }
 
-        return eventsJsonStr;
+        totalItems = 0;
+        try {
+            JSONObject eventfulString = new JSONObject(eventsJsonStr);
+            totalItems = Integer.valueOf(eventfulString.getString("total_items"));
+        } catch (JSONException e) {
+            Log.i("Get Page Numbers", "JSON Exception");
+
+
+         return;
+        }
+        return;
     }
 
-        //////This method parses JSON string and adds distance and event scores to create
-        //////final eventsList to save
-        public List parseJsonString(String jsonString) throws JSONException {
-            List eventsList = new ArrayList();
-            JSONObject eventfulString = new JSONObject(jsonString);
+    public void saveSyncDateAndLocation() {
+        SharedPreference sharedPreference = new SharedPreference();
+        sharedPreference.save(context, locationRequestSubmitted, SharedPreference.PREFS_LOCATION_KEY);
+        sharedPreference.save(context, todayDate, SharedPreference.PREFS_SYNC_DATE_KEY);
+    }
 
-            JSONObject eventString = eventfulString.getJSONObject("events");
-            JSONArray events = eventString.getJSONArray("event");
-            for (int i = 0; i < events.length(); i++) {
-                JSONObject jsonEvent = events.getJSONObject(i);
 
-                String name = jsonEvent.getString("title");
-                String date = jsonEvent.getString("start_time");
-                String venueName = jsonEvent.getString("venue_name");
-                String address = jsonEvent.getString("venue_address") + ", " + jsonEvent.getString("city_name") + ", " + jsonEvent.getString("region_name");
-                String description = jsonEvent.getString("description");
-                String category_1 = "none";
-                String category_2 = "none";
-                String category_3 = "none";
-                double distance = 0;
+    protected class LocationIdentifier implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-                ///Parse Category - currently only allows for max of 3 categories per event
-                JSONObject categoriesObject = jsonEvent.getJSONObject("categories");
-                JSONArray categoryArray = categoriesObject.getJSONArray("category");
 
-                //Log.i("parseJSON", "JSON Array: " + categoryArray.toString());
-                //category_1-3 parse
-                if(categoryArray.length()>0) {
-                    category_1 = categoryArray.getJSONObject(0)
-                            .getString("name")
-                            .replaceAll("&amp;", "and");
-                //    Log.i("parseJSON", "Category 1: " + category_1);
-                } else {
-                    category_1 = "Uncategorized";
-                }
-                if(categoryArray.length()>1) {
-                    category_2 = categoryArray.getJSONObject(1)
-                            .getString("name")
-                            .replaceAll("&amp;", "and");
-                  //  Log.i("parseJSON", "Category 2: " + category_2);
-                }
-                if(categoryArray.length()>2) {
-                    category_3 = categoryArray.getJSONObject(2).
-                            getString("name").
-                            replaceAll("&amp;", "and");
-                    //Log.i("parseJSON", "Category 3: " + category_3);
-                }
+        GoogleApiClient mGoogleApiClient;
+        PackageManager packageManager;
+        int hasPermission;
+        Location mLastLocation;
 
-                //Log.i("parseJSON", "Completed Parsing Categories");
-                String linkToOrigin = jsonEvent.getString("url");
-                String locationCoordinates = jsonEvent.getString("latitude") + "," +
-                        jsonEvent.getString("longitude");
-                String requestCoordinates = coordinates;
 
-                int id = 0;
-                String eventRequester = requester;
+        public Void openConnection() {
 
-                FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
-                        category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates,
-                        eventRequester);
+            packageManager = context.getPackageManager();
+            if (mGoogleApiClient == null) {
+                mGoogleApiClient = new GoogleApiClient.Builder(context)
 
-                eventsList.add(newFonoEvent);
+                        .addConnectionCallbacks(this)
 
+                        .addOnConnectionFailedListener(this)
+                        .addApi(LocationServices.API)
+                        .build();
             }
-            return eventsList;
+            mGoogleApiClient.connect();
+
+            return null;
+        }
+
+        @Override
+        public void onConnectionSuspended(int i) {
 
         }
 
-             protected class LocationIdentifier implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
+        @Override
+        public void onConnected(Bundle connectionHint) {
+            String newCenterLocation = "";
+            Log.i("onConnected", "onConnected: Connecting ");
 
-                 GoogleApiClient mGoogleApiClient;
-                 PackageManager packageManager;
-                 int hasPermission;
-                 Location mLastLocation;
+            hasPermission = packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "com.davidparkeredwards.fono");
+            Log.i("onConnected", "onConnected: " + hasPermission);
+            if (hasPermission == packageManager.PERMISSION_GRANTED) {
+                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+                Log.i("onConnected", "onConnected: Permission passed");
+                if (mLastLocation != null) {
+                    Log.i("Last Location", String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()));
+                    newCenterLocation = String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude());
+                    locationRequestSubmitted = newCenterLocation;
+                }
+                Log.i("Location Info", "Current location: " + newCenterLocation);
 
+                mGoogleApiClient.disconnect();
+            }
 
-                 public Void openConnection() {
+        }
 
-                     packageManager = context.getPackageManager();
-                     if (mGoogleApiClient == null) {
-                         Log.i("Get centerLocation", "onCreate: Launching builder");
-                         mGoogleApiClient = new GoogleApiClient.Builder(context)
+        @Override
+        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
 
-                                 .addConnectionCallbacks(this)
+        }
 
-                                 .addOnConnectionFailedListener(this)
-                                 .addApi(LocationServices.API)
-                                 .build();
-                     }
-                     mGoogleApiClient.connect();
-
-                    return null;
-                 }
-
-                 @Override
-                 public void onConnectionSuspended(int i) {
-
-                 }
-
-
-                 @Override
-                 public void onConnected(Bundle connectionHint) {
-                    String newCenterLocation = "";
-                     Log.i("onConnected", "onConnected: Connecting ");
-
-                     hasPermission = packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "com.davidparkeredwards.fono");
-                     Log.i("onConnected", "onConnected: " + hasPermission);
-                     if (hasPermission == packageManager.PERMISSION_GRANTED) {
-                         mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                         Log.i("onConnected", "onConnected: Permission passed");
-                         if (mLastLocation != null) {
-                             Log.i("Last Location", String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()));
-                             newCenterLocation = String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude());
-                             coordinates = newCenterLocation;
-                         }
-                         Log.i("Location Info", "Current location: " + newCenterLocation);
-
-                         mGoogleApiClient.disconnect();
-                     }
-
-                 }
-
-                 @Override
-                 public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-                 }
-
-             }
+    }
 
 }
-

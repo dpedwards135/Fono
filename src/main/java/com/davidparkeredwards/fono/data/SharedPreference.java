@@ -68,6 +68,30 @@ public class SharedPreference {
         return categoriesList;
     }
 
+    public String getLastSyncLocation(Context context) {
+        SharedPreferences settings;
+        String text;
+
+        settings = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        text = settings.getString(PREFS_LOCATION_KEY, null);
+        if(text == null) {
+            text = "No lastSyncLocation";
+        }
+        return text;
+    }
+    public String getLastSyncDate(Context context) {
+        SharedPreferences settings;
+        String text;
+
+        settings = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        text = settings.getString(PREFS_SYNC_DATE_KEY, null);
+        if(text == null) {
+            text = "No lastSyncDate";
+        }
+        return text;
+    }
+
+
     public void clearSharedPreference(Context context) {
         SharedPreferences settings;
         Editor editor;

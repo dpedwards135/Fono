@@ -95,7 +95,14 @@ public class PreferencesFragment extends Fragment {
                 "University and Alumni",
                 "Politics and Activism",
                 "Conferences and Tradeshows",
-                "Nightlife and Singles"
+                "Nightlife and Singles",
+                "Literary and Books",
+                "Festivals",
+                "Sales and Retail",
+                "Organizations and Meetups",
+                "Religion and Spirituality",
+                "Technology",
+                "Pets"
         };
         Arrays.sort(categoryStrings);
 

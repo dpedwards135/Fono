@@ -35,8 +35,7 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
     @Override
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.i("SyncAdapter", "onPerformSync: Performing sync");
-        EventRequest eventRequest = new EventRequest(FONO.getContext(),
-                "", "", EventDbManager.RADAR_SEARCH_REQUEST, "");
+        EventRequest eventRequest = new EventRequest(FONO.getContext(), "", "", "", EventDbManager.RADAR_SEARCH_REQUEST);
         eventRequest.execute();
         Log.i("onPerformSync", "onPerformSync: Ending onPerformSync");
     }

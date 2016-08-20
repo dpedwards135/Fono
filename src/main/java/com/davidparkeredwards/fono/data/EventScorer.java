@@ -37,23 +37,28 @@ public class EventScorer {
 
     public double calculateDistance(String locationCoordinates, String requestCoordinates) {
         /////////Check Distance and add distance score
-        List<String> locations = Arrays.asList(locationCoordinates.split("\\s*,\\s*"));
-        List<String> requests = Arrays.asList(requestCoordinates.split("\\s*,\\s*"));
-        double la1 = Double.valueOf(locations.get(0));
-        double lo1 = Double.valueOf(locations.get(1));
-        double la2 = Double.valueOf(requests.get(0));
-        double lo2 = Double.valueOf(requests.get(1));
         float[] results = {0, 0, 0};
-        Location.distanceBetween(la2, lo2, la1, lo1, results);
+        try {
+            List<String> locations = Arrays.asList(locationCoordinates.split("\\s*,\\s*"));
+            List<String> requests = Arrays.asList(requestCoordinates.split("\\s*,\\s*"));
+            double la1 = Double.valueOf(locations.get(0));
+            double lo1 = Double.valueOf(locations.get(1));
+            double la2 = Double.valueOf(requests.get(0));
+            double lo2 = Double.valueOf(requests.get(1));
+            Location.distanceBetween(la2, lo2, la1, lo1, results);
 
-        double miles = results[0] * .000621371;
+        } catch(NumberFormatException e) {
+            Log.i(TAG, "calculateDistance: NumberFormatException");
+
+        }
+
+                double miles = results[0] * .000621371;
         return miles;
     }
 
     public double scoreEvents(Context context, double distance, String category1,
                               String category2, String category3, String description) {
 
-        Log.i(TAG, "scoreEvents: Scoring Events");
 
         //Get Category preferences
         SharedPreference sharedPreference = new SharedPreference();
@@ -70,7 +75,6 @@ public class EventScorer {
         //Get Score for distance
         double milesScore = 0 - (distance/1000);
         score = score + milesScore;
-        Log.i(TAG, "Check Cat List: " + categoriesList.toString());
 
         ////Check for notNull description, add bonus
         if (description.matches("null")) {
@@ -84,11 +88,9 @@ public class EventScorer {
                 categoriesList.contains(category2) ||
                 categoriesList.contains(category3)) {
             score = score + 1000;
-            Log.i(TAG, "It has events that are in check list");
         }
 
         ///////Check score
-        Log.i(TAG, "Event Score: " + score);
 
         return score;
 
@@ -97,8 +99,6 @@ public class EventScorer {
     public List<FonoEvent> getEventsList(Context context) {
         Cursor cursor = context.getContentResolver().query(EventsContract.EventEntry.CONTENT_URI, null, null, null, null);
         List<FonoEvent> eventsList = new ArrayList<>();
-
-        Log.i(TAG, "scoreEvents: " + cursor.getCount());
         while (cursor.moveToNext()) {
 
         //////Get Old Data
@@ -120,10 +120,8 @@ public class EventScorer {
             distance = calculateDistance(locationCoordinates, requestCoordinates);
             eventScore = scoreEvents(context, distance, category_1, category_2,
                     category_3, description);
-            Log.i(TAG, "New Event Score - Name: " + name + "; Score: " + eventScore);
 
             String eventRequester = cursor.getString(EventDbManager.COL_REQUESTER);
-            Log.i(TAG, "Check Requester: " + eventRequester);
         /////Save to List
             FonoEvent newFonoEvent = new FonoEvent(name, date, venueName, address, description,
                     category_1, category_2, category_3, linkToOrigin, id, locationCoordinates, requestCoordinates, eventRequester);

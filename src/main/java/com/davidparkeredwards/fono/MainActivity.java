@@ -41,11 +41,6 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        //EventRequest newEventRequest = new EventRequest(this);
-        //newEventRequest.execute();
-        FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
-        fonoSyncAdapter.initializeSyncAdapter(this);
-        fonoSyncAdapter.syncImmediately(this);
         if (savedInstanceState == null) {
             Bundle radarBundle = new Bundle();
             radarBundle.putString("Requester", EventDbManager.RADAR_SEARCH_REQUEST);
@@ -54,6 +49,12 @@ public class MainActivity extends AppCompatActivity  {
             getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
                     fragment).commit();
         }
+        //EventRequest newEventRequest = new EventRequest(this);
+        //newEventRequest.execute();
+        FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
+        fonoSyncAdapter.initializeSyncAdapter(this);
+        fonoSyncAdapter.syncImmediately(this);
+
 
 
     }

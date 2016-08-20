@@ -12,9 +12,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.davidparkeredwards.fono.R;
 import com.davidparkeredwards.fono.data.EventDbManager;
+import com.davidparkeredwards.fono.data.EventScorer;
 
 public class SearchDialogFragment extends DialogFragment {
 
@@ -87,9 +89,13 @@ public class SearchDialogFragment extends DialogFragment {
                 "Month: " + monthString +
                 "Day: " + dayString
         );
+
         Log.i("customEventRequest", customDate + " " + customKeywords + " " + customLocation);
-        EventRequest customEventRequest = new EventRequest(FONO.getContext(), customDate, customKeywords,
-                EventDbManager.CUSTOM_SEARCH_REQUEST, customLocation);
+        EventRequest customEventRequest = new EventRequest(FONO.getContext(), customLocation, customKeywords, customDate, EventDbManager.CUSTOM_SEARCH_REQUEST);
         customEventRequest.execute();
+        Toast toast = Toast.makeText(FONO.getContext(), "Searching", Toast.LENGTH_LONG);
+        toast.show();
+       // EventScorer es = new EventScorer();
+       // es.allCategoriesToLog(FONO.getContext());
     }
 }

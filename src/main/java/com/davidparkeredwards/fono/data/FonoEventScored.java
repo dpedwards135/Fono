@@ -196,11 +196,6 @@ public class FonoEventScored extends FonoEvent {
         this.distance = eventScorer.calculateDistance(locationCoordinates, requestCoordinates);
         this.eventScore = eventScorer.scoreEvents(FONO.getContext(), distance, category_1,
                 category_2, category_3, description);
-        Log.i("FonoEventScored", "Sent score request to eventScorer");
-        Log.i("FonoEventScored", "Name: " + this.name +
-                "\nCategories: " + this.category_1 + this.category_2 + this.category_3 +
-                "\nNew Score: " + this.eventScore);
-
     }
 
     public String toString() {

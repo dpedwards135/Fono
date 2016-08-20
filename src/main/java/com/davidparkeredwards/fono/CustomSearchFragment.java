@@ -66,12 +66,23 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     ArrayAdapter<FonoEventScored> arrayAdapter;
     String requester;
     List<FonoEventScored> listViewInfoScored;
+    Bundle savedState;
 
     public CustomSearchFragment() {}
 
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
+        this.savedState = savedInstanceState;
         super.onCreate(savedInstanceState);
+    }
+
+    @Override
+    public void onResume() {
+        if(savedState != null){
+            scoreAndProcessEvents(listViewInfo);
+        }
+
+        super.onResume();
     }
 
     @Nullable
@@ -81,8 +92,12 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         requester = getArguments().getString("Requester");
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
 
+
+
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
         View searchToggle = rootView.findViewById(R.id.searchToggle);
+
+
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
             searchToggle.setVisibility(View.GONE);
         }
@@ -109,11 +124,8 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 // ((ListView) parent).getItemAtPosition(position);
-                Log.i("OnListViewClick", "position: " + position);
                 int wrongId = arrayAdapter.getItem(position).getId();
                 int _id = listViewInfoScored.get(position).getId();
-                Log.i("OnListViewClick", "_id: " + _id +
-                        "\nWrongID: " +wrongId);
 
                 Intent intent = new Intent(getActivity(), EventDetail.class)
                         .setData(EventsContract.EventEntry.buildEventsUriWithId(_id));
@@ -232,9 +244,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         EventDbManager eventDbManager = new EventDbManager(getContext());
         listViewInfo = eventDbManager.getEventsArray(cursor);
         if(listViewInfo.size()>0) {
-            Log.i("onLoadFinished", "String Check: " + listViewInfo.get(0).toString() +
-                    "\n" + "Name of first listViewInfo Event: " + listViewInfo.get(0).getName() +
-                    "\n" + "Size of listViewInfo = " + listViewInfo.size());
             scoreAndProcessEvents(listViewInfo);
         }
 
@@ -244,7 +253,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     public void scoreAndProcessEvents(List<FonoEvent> listViewInfo) {
 
-        Log.i("scoreAndProcessEvents", "Attempting to score");
         listViewInfoScored = new ArrayList<>();
         for (FonoEvent fonoEvent : listViewInfo) {
             FonoEventScored fonoEventScored = new FonoEventScored(
@@ -263,7 +271,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
                     fonoEvent.getRequester()
             );
             listViewInfoScored.add(fonoEventScored);
-            Log.i("scoreAndProcessEvents", "FES Score: " + fonoEventScored.getEventScore());
         }
 
         Collections.sort(listViewInfoScored, new Comparator<FonoEventScored>() {
