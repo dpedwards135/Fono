@@ -3,18 +3,20 @@ package com.davidparkeredwards.fono;
 import android.app.AlertDialog;
 import android.app.Dialog;
 
-
+import com.davidparkeredwards.fono.R;
 import android.app.DialogFragment;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.davidparkeredwards.fono.R;
+
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventScorer;
 
@@ -24,6 +26,7 @@ public class SearchDialogFragment extends DialogFragment {
     EditText keywordET;
     EditText locationET;
     DatePicker datePicker;
+    Button submitButton;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -31,15 +34,16 @@ public class SearchDialogFragment extends DialogFragment {
 
 
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        final AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
         // Inflate and set the layout for the dialog
         // Pass null as the parent view because its going in the dialog layout
         View view = inflater.inflate(R.layout.search_popup, null);
-        builder.setView(view)
+        dialog.setView(view);
                 // Add action buttons
+                /*
                 .setNeutralButton("Search Now", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int id) {
@@ -47,11 +51,44 @@ public class SearchDialogFragment extends DialogFragment {
                         customEventRequest();
                     }
                 });
+                */
         keywordET = (EditText) view.findViewById(R.id.customKeywords);
         locationET = (EditText) view.findViewById(R.id.customLocation);
         datePicker = (DatePicker) view.findViewById(R.id.customDatePicker);
+        submitButton = (Button) view.findViewById(R.id.submitSearch);
 
-        return builder.create();
+        keywordET.setNextFocusDownId(R.id.customLocation);
+        locationET.setNextFocusDownId(R.id.customDatePicker);
+        datePicker.setNextFocusDownId(R.id.submitSearch);
+
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialog.dismiss();
+                Log.i("SearchDialogFragment", "Just Clicked Search");
+                customEventRequest();
+            }
+        });
+
+        keywordET.requestFocus();
+        datePicker.setFocusableInTouchMode(true);
+        Log.i("DatePicker", "DatePicker Requested Focus");
+        datePicker.setOnKeyListener(new View.OnKeyListener() {
+
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.i("DatePicker", "Key Entered" + event);
+                if(event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    Log.i("SearchDialogFragment", "Just hit enter after spinner");
+                    customEventRequest();
+                    dialog.dismiss();
+                    return true;
+                }
+
+                return false;
+            }
+        });
+        return dialog;
     }
 
 

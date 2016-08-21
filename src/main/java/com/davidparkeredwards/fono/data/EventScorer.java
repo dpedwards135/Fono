@@ -37,7 +37,7 @@ public class EventScorer {
 
     public double calculateDistance(String locationCoordinates, String requestCoordinates) {
         /////////Check Distance and add distance score
-        float[] results = {0, 0, 0};
+        float[] results = {1609344, 0, 0};
         try {
             List<String> locations = Arrays.asList(locationCoordinates.split("\\s*,\\s*"));
             List<String> requests = Arrays.asList(requestCoordinates.split("\\s*,\\s*"));

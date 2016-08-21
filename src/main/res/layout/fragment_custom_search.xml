@@ -5,11 +5,16 @@
     android:layout_height="match_parent"
     tools:context="com.davidparkeredwards.fono.CustomSearchFragment">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:foregroundGravity="right"
         android:id="@+id/searchToggle"
-        android:text="Open PopUp"/>
+        android:src="@drawable/search_small"
+        android:padding="5dp"
+        android:scaleY="1.0"
+        android:background="@drawable/search_bar"
+        android:text="Open PopUp" />
 
     <ListView
         android:layout_width="match_parent"

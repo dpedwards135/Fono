@@ -29,8 +29,10 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
@@ -44,19 +46,7 @@ import java.util.Date;
 import java.util.List;
 
 
-/* Next:
- * Set up array to properly sort
- * Create and hook up sort by radio buttons
- * Apply changes to ResultsFragment
- * Take a break
- * Build Layout:
- *  Main Activity Frame
- *  Search popout
- *  ListViews
- *  EventDetail
- * Add mapView to EventDetail
- * Add navigation intent
- */
+
 public class CustomSearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EVENTS_LOADER = 0;
@@ -93,7 +83,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
 
 
-
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
         View searchToggle = rootView.findViewById(R.id.searchToggle);
 
@@ -114,12 +103,10 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         };
         searchToggle.setOnClickListener(searchToggleListener);
 
-
         arrayAdapter = new ArrayAdapter<FonoEventScored>(getActivity(), R.layout.list_item_events);
 
 
         listView.setAdapter(arrayAdapter);
-
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -134,74 +121,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         });
 
     return rootView;
-/*
-                    Intent intent = new Intent(getActivity(), EventDetail.class);
-
-                    startActivity(intent);
-*/
-
-/*
-        //Set onClickListener to Search  Button
-
-        View.OnClickListener customSearchListener = new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                customEventRequest();
-            }
-        };
-        customSearchButton.setOnClickListener(customSearchListener);
-
-        //Set MinDate to DatePicker
-
-        datePicker =  ((DatePicker) rootView.findViewById(R.id.customDatePicker));
-        datePicker.setMinDate(System.currentTimeMillis() - 1000);
-        datePicker.setSpinnersShown(true);
-        datePicker.setCalendarViewShown(false);
-        return rootView;
-
-    }
-
-
-    public void customEventRequest() {
-        setSearchBoxVisibility();
-
-        //Format date for JSON = YYYYMMDD00-YYYYMMDD00
-        int day =datePicker.getDayOfMonth();
-        int month = datePicker.getMonth() + 1;
-        int year = datePicker.getYear();
-        String dayString = Integer.toString(day);
-        String monthString = Integer.toString(month);
-        String yearString = Integer.toString(year);
-
-        String customDate;
-        if (day < 10 && month < 10) {
-            customDate = "" + yearString + "0" + monthString +
-                    "0" + dayString + "00";
-        } else if(day >= 10 && month < 10) {
-            customDate = "" + yearString + "0" + monthString  + dayString + "00";
-        } else if(day < 10 && month >= 10) {
-            customDate = "" + yearString + monthString + "0" + dayString + "00";
-        }
-        else {
-            customDate = "" + yearString + monthString + dayString + "00";
-        }
-        customDate = customDate + "-" + customDate;
-
-
-        //Get Keywords and Location
-        String customKeywords = ((EditText) rootView.findViewById(R.id.customKeywords)).getText().toString();
-        String customLocation = ((EditText) rootView.findViewById(R.id.customLocation)).getText().toString();
-        Log.i("customEventRequest", "customEventRequest: " +
-                "Year: " + yearString +
-                "Month: " + monthString +
-                "Day: " + dayString
-        );
-        Log.i("customEventRequest", customDate + " " + customKeywords + " " + customLocation);
-        EventRequest customEventRequest = new EventRequest(getContext(), customDate, customKeywords,
-                EventDbManager.CUSTOM_SEARCH_REQUEST, customLocation);
-        customEventRequest.execute();
-    }
-*/
 
     }
     @Override
@@ -209,19 +128,14 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         getLoaderManager().initLoader(EVENTS_LOADER,null,this);
         super.onActivityCreated(savedInstanceState);
     }
-    //private void updateEvents --> Put AsyncTask here
 
 
     @Override
     public void onStart() {
         super.onStart();
-        /*AsyncTask<String, Void, String> setDisplay = new EventRequest(this, locCoordinates, listView)
-                .execute(locCoordinates);
-        */
     }
 
     public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-        // Sort Order if desired
         String selection = EventsContract.EventEntry.COLUMN_REQUESTER + "=?";
         String[] selectionArgs = new String[] {requester};
 
@@ -237,10 +151,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
 
     public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-
-        //1. Get FonoEvents Array, unscored
-        //2. Score the array
-        //3. Reattach to arrayAdapter
         EventDbManager eventDbManager = new EventDbManager(getContext());
         listViewInfo = eventDbManager.getEventsArray(cursor);
         if(listViewInfo.size()>0) {
@@ -252,7 +162,6 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     }
 
     public void scoreAndProcessEvents(List<FonoEvent> listViewInfo) {
-
         listViewInfoScored = new ArrayList<>();
         for (FonoEvent fonoEvent : listViewInfo) {
             FonoEventScored fonoEventScored = new FonoEventScored(
@@ -287,9 +196,8 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     public void onLoaderReset(Loader<Cursor> cursorLoader) {
         arrayAdapter.notifyDataSetChanged();
-        Log.i("onLoaderReset", "Loader Reset");
     }
+
 }
 
-//////////Need to figure out how to get events ranking in the order they already have.
 

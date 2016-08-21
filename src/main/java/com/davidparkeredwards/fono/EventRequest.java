@@ -3,11 +3,13 @@ package com.davidparkeredwards.fono;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventScorer;
@@ -24,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
@@ -45,6 +48,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
     String locationRequestSubmitted;
     URL baseJsonUrl;
     double totalItems;
+    boolean internetConnected;
 
     //JSON Request String Elements
 
@@ -61,6 +65,15 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
+        if(internetConnected == false) {
+            Toast toast = Toast.makeText(context, "Unable to get events: No internet connection", Toast.LENGTH_SHORT);
+            toast.show();
+            return;
+        } else if (totalItems == 0 && requester == EventDbManager.CUSTOM_SEARCH_REQUEST) {
+            Toast toast = Toast.makeText(context, "No Events Found", Toast.LENGTH_LONG);
+            toast.show();
+            return;
+        }
         for(int i = 1; i <= Math.ceil(totalItems/100); i++) {
             GetAndSaveEvents getAndSaveEvents = new GetAndSaveEvents(context, totalItems, i, baseJsonUrl, locationRequestSubmitted, requester);
             getAndSaveEvents.executeOnExecutor(THREAD_POOL_EXECUTOR);
@@ -71,13 +84,18 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         }
 
         Log.i("OnPostExecute", "Event Request Task Finished");
-
+        return;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
+        /////Check internet connection and cancel if unavailable
 
-
+        internetConnected = isInternetAvailable();
+        if(internetConnected == false) {
+            return null;
+        }
+        /////Give priority to Custom Search Requests
         if(requester==EventDbManager.CUSTOM_SEARCH_REQUEST) {
             android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND + Process.THREAD_PRIORITY_MORE_FAVORABLE);
         } else {
@@ -85,6 +103,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         }
 
         getLocationRequestSubmitted();
+
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST && !requiresSync()) {
             //End Sync Process if not required
             return null;
@@ -95,7 +114,9 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
             Log.i("doInBackground", "Malformed URL");
         }
         getTotalItemQuantity(baseJsonUrl);
-
+        if(totalItems == 0) {
+            return null;
+        }
         Log.i("EventRequest", "Total Items = " + totalItems);
 
         EventDbManager dbManager = new EventDbManager(context);
@@ -312,6 +333,15 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
 
         }
 
+    }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("google.com");
+            return !ipAddr.equals("");
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }
