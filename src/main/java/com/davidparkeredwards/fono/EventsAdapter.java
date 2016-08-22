@@ -5,11 +5,15 @@ import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.CursorAdapter;
 import android.widget.TextView;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventsContract;
+import com.davidparkeredwards.fono.data.FonoEventScored;
+
+import java.util.ArrayList;
 
 /**
  * Created by User on 8/9/2016.
@@ -45,3 +49,4 @@ public class EventsAdapter extends CursorAdapter {
         tv.setText(convertCursorRowToUxFormat(cursor));
     }
 }
+

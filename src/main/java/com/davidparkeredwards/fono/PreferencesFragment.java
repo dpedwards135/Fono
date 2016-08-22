@@ -27,12 +27,49 @@ import com.davidparkeredwards.fono.data.SharedPreference;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 
 public class PreferencesFragment extends Fragment {
+
+    public static final Map<String, Integer> categoryImages = new HashMap<String, Integer>() {
+
+        {
+            put("Performing Arts", R.drawable.ballerina);
+            put("Film", R.drawable.projector);
+            put("Outdoors and Recreation", R.drawable.hiker);
+            put("Fundraising and Charity", R.drawable.heart );
+            put("Other and Miscellaneous", R.drawable.questionmark);
+            put("Sports",R.drawable.baseball);
+            put("Education", R.drawable.blackboard);
+            put("Museums and Attractions", R.drawable.museum);
+            put("Holiday",R.drawable.balloons);
+            put("Art Galleries and Exhibits", R.drawable.palette);
+            put("Neighborhood", R.drawable.tree);
+            put("Kids and Family", R.drawable.crayons);
+            put("Science", R.drawable.chemical);
+            put("Business and Networking", R.drawable.handshake);
+            put("Health and Wellness", R.drawable.apple);
+            put("Food and Wine", R.drawable.wineandcheese);
+            put("Concerts and Tour Dates", R.drawable.musicnotes);
+            put("Comedy", R.drawable.comedy);
+            put("University and Alumni", R.drawable.mortarboard);
+            put("Politics and Activism", R.drawable.statueofliberty);
+            put("Conferences and Tradeshows", R.drawable.podium);
+            put("Nightlife and Singles", R.drawable.discoball);
+            put("Literary and Books", R.drawable.book);
+            put("Festivals", R.drawable.fireworks);
+            put("Sales and Retail", R.drawable.special);
+            put("Organizations and Meetups", R.drawable.nametag);
+            put("Religion and Spirituality", R.drawable.sunburst);
+            put("Technology", R.drawable.radiosignal);
+            put("Pets", R.drawable.dog);
+        }
+    };
 
     TextView preferencesText;
     String preferencesString;

@@ -51,7 +51,7 @@
             android:padding="10dp"
             android:layout_width="50dp"
             android:layout_height="50dp"
-            android:src="@drawable/heart_small"
+            android:src="@drawable/blackheart"
             android:layout_gravity="bottom"
             android:text="P"
             android:onClick="launchPreferences"
