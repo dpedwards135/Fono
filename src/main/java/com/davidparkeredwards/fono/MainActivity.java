@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity  {
     ImageView preferenceSelector;
     ImageView customSearchSelector;
     int defaultBackgroundColor = 0xFFCCCCCC;
-    View viewSelected;
+    int viewSelected; // 1 = Radar, 2 = Pref, 3 = Custom
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,8 +54,11 @@ public class MainActivity extends AppCompatActivity  {
             fragment.setArguments(radarBundle);
             getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
                     fragment).commit();
-            viewSelected = radarSelector;
+            viewSelected = 1;
             changeSelectedFragment();
+        } else {
+            String savedView = savedInstanceState.getString("View");
+            Log.i("Saved View", savedView);
         }
         FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
         fonoSyncAdapter.initializeSyncAdapter(this);
@@ -73,7 +76,7 @@ public class MainActivity extends AppCompatActivity  {
         fragment.setArguments(radarBundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
                 fragment).commit();
-        viewSelected = customSearchSelector;
+        viewSelected = 3;
         changeSelectedFragment();
     }
 
@@ -84,7 +87,7 @@ public class MainActivity extends AppCompatActivity  {
         fragment.setArguments(radarBundle);
         getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
                 fragment).commit();
-        viewSelected = radarSelector;
+        viewSelected = 1;
         changeSelectedFragment();
         Log.i("RadarLaunch", "launchEventfulResults: Launching Radar");
     }
@@ -92,7 +95,7 @@ public class MainActivity extends AppCompatActivity  {
     public void launchPreferences(View view) {
 
         getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new PreferencesFragment()).commit();
-        viewSelected = preferenceSelector;
+        viewSelected = 2;
         changeSelectedFragment();
     }
 
@@ -100,9 +103,67 @@ public class MainActivity extends AppCompatActivity  {
         radarSelector.setBackgroundResource(0);
         preferenceSelector.setBackgroundResource(0);
         customSearchSelector.setBackgroundResource(0);
-        viewSelected.setBackgroundResource(R.drawable.menu_selected);
+        switch (viewSelected) {
+            case 1:
+                radarSelector.setBackgroundResource(R.drawable.menu_selected);
+                break;
+            case 2:
+                preferenceSelector.setBackgroundResource(R.drawable.menu_selected);
+                break;
+            case 3:
+                customSearchSelector.setBackgroundResource(R.drawable.menu_selected);
+                break;
+        }
+
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        //I need to add a variable that indicates which fragment is currently loaded
+        //so that it can be reloaded as if the button was pressed again.
 
+        outState.putString("View", Integer.toString(viewSelected));
+        Log.i("onSaveInstanceState", "selected view: " + Integer.toString(viewSelected));
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        int savedView = Integer.valueOf(savedInstanceState.getString("View"));
+        Log.i("Saved View", Integer.toString(savedView));
+        viewSelected = savedView;
+        restoreView();
+        super.onRestoreInstanceState(savedInstanceState);
+    }
+
+    protected void restoreView() {
+        switch (viewSelected) {
+            case(1):
+                Bundle radarBundle = new Bundle();
+                radarBundle.putString("Requester", EventDbManager.RADAR_SEARCH_REQUEST);
+                Fragment fragment = new CustomSearchFragment();
+                fragment.setArguments(radarBundle);
+                getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
+                        fragment).commit();
+                viewSelected = 1;
+                changeSelectedFragment();
+                break;
+            case(2):
+                getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer, new PreferencesFragment()).commit();
+                viewSelected = 2;
+                changeSelectedFragment();
+                break;
+            case(3):
+                Bundle searchBundle = new Bundle();
+                searchBundle.putString("Requester", EventDbManager.CUSTOM_SEARCH_REQUEST);
+                Fragment customfragment = new CustomSearchFragment();
+                customfragment.setArguments(searchBundle);
+                getSupportFragmentManager().beginTransaction().replace(R.id.mainActivityContainer,
+                        customfragment).commit();
+                viewSelected = 3;
+                changeSelectedFragment();
+
+        }
+    }
 }
 

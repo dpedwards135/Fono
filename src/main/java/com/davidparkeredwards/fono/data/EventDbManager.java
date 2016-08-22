@@ -122,7 +122,7 @@ public class EventDbManager {
             eventValues.put(EventsContract.EventEntry.COLUMN_CATEGORY_2, fonoEvent.getCategory_2());
             eventValues.put(EventsContract.EventEntry.COLUMN_CATEGORY_3, fonoEvent.getCategory_3());
             eventValues.put(EventsContract.EventEntry.COLUMN_LINK_TO_ORIGIN, fonoEvent.getLinkToOrigin());
-            eventValues.put(EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE, today.toString());
+            eventValues.put(EventsContract.EventEntry.COLUMN_DOWNLOAD_DATE, fonoEvent.getDate());
             eventValues.put(EventsContract.EventEntry.COLUMN_REQUESTER, fonoEvent.getRequester());
 
             cVVector.add(i, eventValues);

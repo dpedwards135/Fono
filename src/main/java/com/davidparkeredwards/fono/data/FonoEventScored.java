@@ -199,6 +199,6 @@ public class FonoEventScored extends FonoEvent {
     }
 
     public String toString() {
-        return this.name + "\n" + this.venueName + "\n" + this.address +"\n" + this.eventScore;
+        return this.name + "\n    " + this.venueName + "\n    " + Math.ceil((this.distance*100)/100) + " miles";
     }
 }

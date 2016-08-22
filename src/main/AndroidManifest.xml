@@ -7,6 +7,7 @@
     <uses-permission android:name="android.permission.READ_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.WRITE_SYNC_SETTINGS" />
     <uses-permission android:name="android.permission.AUTHENTICATE_ACCOUNTS" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:name=".FONO"
@@ -23,7 +24,22 @@
             </intent-filter>
         </activity>
         <activity android:name=".EventfulResults" />
-        <activity android:name=".EventDetail" />
+        <activity android:name=".EventDetail" >
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <!-- Include the host attribute if you want your app to respond
+                     only to URLs with your app's domain. -->
+                <data android:scheme="http"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <!-- The BROWSABLE category is required to get links from web pages. -->
+                <category android:name="android.intent.category.BROWSABLE" />
+            </intent-filter>
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <data android:scheme="geo" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>/>
 
         <provider
             android:name=".data.EventsProvider"

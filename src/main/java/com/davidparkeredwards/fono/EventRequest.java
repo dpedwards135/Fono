@@ -66,7 +66,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         super.onPostExecute(aVoid);
 
         if(internetConnected == false) {
-            Toast toast = Toast.makeText(context, "Unable to get events: No internet connection", Toast.LENGTH_SHORT);
+            Toast toast = Toast.makeText(context, "Unable to get events: No internet connection", Toast.LENGTH_LONG);
             toast.show();
             return;
         } else if (totalItems == 0 && requester == EventDbManager.CUSTOM_SEARCH_REQUEST) {

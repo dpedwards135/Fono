@@ -1,23 +1,19 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     tools:context="com.davidparkeredwards.fono.PreferencesFragment">
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Save Preferences"
-        android:layout_alignParentRight="true"
-        android:layout_centerVertical="true"
-        android:onClick="savePreferences"
-        android:id="@+id/save_preferences"
-        />
             <TextView
                 android:layout_width="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:gravity="center_horizontal"
+                android:text="Check your favorite categories:"
+                android:textSize="20dp"
+                android:padding="5dp"
                 android:layout_height="wrap_content"
                 android:id="@+id/preferencesText"
-                android:text="Example Text"/>
+                android:textColor="#000000"/>
 
     <ScrollView
         android:layout_width="wrap_content"
@@ -27,14 +23,6 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="vertical">
-                <SeekBar
-                    android:id="@+id/seek1"
-                    android:layout_width="fill_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="10dp"
-                    android:progress="20"
-                    android:secondaryProgress="20"
-                    />
 
                 <LinearLayout
                     android:layout_width="wrap_content"
@@ -46,28 +34,5 @@
                 </LinearLayout>
             </LinearLayout>
     </ScrollView>
-    Performing Arts
-    Film
-    Outdoors and Recreation
-    Fundraising and Charity
-    Other and Miscellaneous
-    Sports
-    Education
-    Museums and Attractions
-    Holiday
-    Art Galleries and Exhibits
-    Neighborhood
-    Kids and Family
-    Science
-    Business and Networking
-    Health and Wellness
-    Food and Wine
-    Concerts and Tour Dates
-    Comedy
-    University and Alumni
-    Politics and Activism
-    Conferences and Tradeshows
-    Nightlife and Singles
 
-
-</RelativeLayout>
+</LinearLayout>

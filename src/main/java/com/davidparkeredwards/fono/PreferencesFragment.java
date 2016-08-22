@@ -66,7 +66,6 @@ public class PreferencesFragment extends Fragment {
 
         preferencesText = (TextView) rootView.findViewById(R.id.preferencesText);
 
-        preferencesText.setText("Select Event Radius and Categories");
 
         //Button savePreferencesButton = (Button) rootView.findViewById(R.id.save_preferences);
         //savePreferencesButton.setOnClickListener(savePreferencesListener);

@@ -24,7 +24,7 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
 
     // Interval at which to sync with the weather, in milliseconds.
 // 60 seconds (1 minute)  180 = 3 hours
-    public static final int SYNC_INTERVAL = 60*240;
+    public static final int SYNC_INTERVAL = 60*10;
     public static final int SYNC_FLEXTIME = SYNC_INTERVAL/3;
     public final String LOG_TAG = FonoSyncAdapter.class.getSimpleName();
 

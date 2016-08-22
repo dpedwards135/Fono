@@ -3,13 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:id="@+id/search_popup">
+    android:id="@+id/search_popup"
+    android:padding="10dp"
+    android:background="@drawable/search_popup_border"
+    >
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Custom Search"
         android:textSize="25dp"
+        android:textColor="#FFFFFF"
         android:layout_gravity="center_horizontal"/>
 
 

@@ -9,7 +9,7 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:orientation="vertical"
     android:layout_gravity="center"
-    android:background="#CCCCCC"
+    android:background="@drawable/main_background"
     tools:context="com.davidparkeredwards.fono.MainActivity">
 
     <LinearLayout
@@ -22,48 +22,55 @@
 
         <ImageView
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-
-            android:src="@drawable/fono_logo_small"
-            android:onClick="launchEventfulResults"
-
+            android:layout_height="50dp"
             android:padding="10dp"
-            android:layout_gravity="bottom" />
+            android:src="@drawable/fono_logo_small"
+            android:onClick="launchEventfulResults" />
 
-        <ImageView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="1"></LinearLayout>
+
+        <ImageView
+            android:padding="10dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/radar"
             android:layout_gravity="bottom"
-            android:padding="10dp"
             android:text="E"
             android:onClick="launchEventfulResults"
             android:id="@+id/radarViewSelector"
             />
-
-        <ImageView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_weight="1"></LinearLayout>
+
+        <ImageView
+            android:padding="10dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
             android:src="@drawable/heart_small"
             android:layout_gravity="bottom"
-            android:padding="10dp"
             android:text="P"
             android:onClick="launchPreferences"
             android:id="@+id/preferenceViewSelector"
              />
-        <ImageView
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_gravity="bottom"
+            android:layout_weight="1"></LinearLayout>
+        <ImageView
             android:padding="10dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_gravity="bottom"
             android:src="@drawable/search_small"
             android:text="CS"
             android:onClick="launchCustomSearch"
-            android:id="@+id/customSearchViewSelector"
-             />
+            android:id="@+id/customSearchViewSelector"/>
+
     </LinearLayout>
 
     <FrameLayout
