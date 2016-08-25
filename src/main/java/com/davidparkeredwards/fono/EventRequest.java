@@ -1,5 +1,6 @@
 package com.davidparkeredwards.fono;
 
+import android.Manifest;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
@@ -10,6 +11,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -67,6 +70,10 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     @Override
     protected void onPreExecute() {
         Log.i("EventRequest", "onPreExecute: On PreExecute");
+        /////Check permissions
+        // Here, thisActivity is the current activity
+
+
         super.onPreExecute();
     }
 
@@ -112,6 +119,9 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+
+
+
         /////Check internet connection and cancel if unavailable
         Log.i("EventRequest", "doInBackground: Running EventRequest");
 

@@ -174,18 +174,18 @@ public class GetAndSaveEvents extends AsyncTask<Void, Void, Void> {
 
             String name = jsonEvent.getString("title");
             String date = jsonEvent.getString("start_time");
-            Log.i("DateTest", date);
+
             ////Format date
             SimpleDateFormat inputDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             SimpleDateFormat outputDate = new SimpleDateFormat("EEE MMM dd yyyy ' - 'hh:mm a");
             try {
                 java.util.Date dateDate = inputDate.parse(date);
                 date = outputDate.format(dateDate);
-                Log.i("DateTestFinal", date);
+
             } catch (java.text.ParseException e) {
                 Log.i("parseJsonString", "Unable to parse date");
             }
-            Log.i("DateTestFinal", date);
+
             String venueName = jsonEvent.getString("venue_name");
             String address = jsonEvent.getString("venue_address") + ", " + jsonEvent.getString("city_name") + ", " + jsonEvent.getString("region_name");
             String description = jsonEvent.getString("description");
