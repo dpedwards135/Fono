@@ -8,6 +8,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.SyncRequest;
 import android.content.SyncResult;
+import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
@@ -36,7 +37,7 @@ public class FonoSyncAdapter extends AbstractThreadedSyncAdapter {
     public void onPerformSync(Account account, Bundle extras, String authority, ContentProviderClient provider, SyncResult syncResult) {
         Log.i("SyncAdapter", "onPerformSync: Performing sync");
         EventRequest eventRequest = new EventRequest(FONO.getContext(), "", "", "", EventDbManager.RADAR_SEARCH_REQUEST);
-        eventRequest.execute();
+        eventRequest.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         Log.i("onPerformSync", "onPerformSync: Ending onPerformSync");
     }
 

@@ -1,14 +1,17 @@
 package com.davidparkeredwards.fono;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
+import android.location.LocationManager;
 import android.net.ConnectivityManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Process;
 import android.support.annotation.NonNull;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
@@ -34,7 +37,7 @@ import java.util.Date;
 /**
  * Created by User on 8/20/2016.
  */
-public class EventRequest extends AsyncTask<Void, Void, Void>{
+public class EventRequest extends AsyncTask<Void, Void, Void> {
 
     //Variables needed to run Eventful API request:
     Context context;
@@ -47,7 +50,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
     String todayDate;
     String locationRequestSubmitted;
     URL baseJsonUrl;
-    double totalItems;
+    double totalItems = 0;
     boolean internetConnected;
 
     //JSON Request String Elements
@@ -62,21 +65,39 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
     }
 
     @Override
+    protected void onPreExecute() {
+        Log.i("EventRequest", "onPreExecute: On PreExecute");
+        super.onPreExecute();
+    }
+
+    @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        if(internetConnected == false) {
-            Toast toast = Toast.makeText(context, "Unable to get events: No internet connection", Toast.LENGTH_LONG);
+        Log.i("OnPostExecute", "onPostExecute: ");
+
+
+        if (internetConnected == false) {
+            Toast toast = Toast.makeText(context, "Unable to get events: No internet connection",
+                    Toast.LENGTH_LONG);
             toast.show();
+            Log.i("Internet Connected", "onPostExecute: Internet Connection Failed");
             return;
+        } else if (locationRequestSubmitted == null) {
+            Log.i("Event Request", "Event Request Unable to proceed without location");
+            Toast toast = Toast.makeText(context, "Unable to proceed without system location info",
+                    Toast.LENGTH_LONG);
+            toast.show();
         } else if (totalItems == 0 && requester == EventDbManager.CUSTOM_SEARCH_REQUEST) {
             Toast toast = Toast.makeText(context, "No Events Found", Toast.LENGTH_LONG);
             toast.show();
+            Log.i("TotalItems", "onPostExecute: 0 Items found");
             return;
         }
-        for(int i = 1; i <= Math.ceil(totalItems/100); i++) {
+        for (int i = 1; i <= Math.ceil(totalItems / 100); i++) {
             GetAndSaveEvents getAndSaveEvents = new GetAndSaveEvents(context, totalItems, i, baseJsonUrl, locationRequestSubmitted, requester);
-            getAndSaveEvents.executeOnExecutor(THREAD_POOL_EXECUTOR);
+            getAndSaveEvents.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            Log.i("For loop", "onPostExecute: Getting and Saving Events Loop");
         }
 
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
@@ -84,29 +105,41 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         }
 
         Log.i("OnPostExecute", "Event Request Task Finished");
+
+
         return;
     }
 
     @Override
     protected Void doInBackground(Void... params) {
         /////Check internet connection and cancel if unavailable
+        Log.i("EventRequest", "doInBackground: Running EventRequest");
 
         internetConnected = isInternetAvailable();
-        if(internetConnected == false) {
+        Log.i("Internet Connected?", "IC == " + internetConnected);
+        if (internetConnected == false) {
             return null;
         }
-        /////Give priority to Custom Search Requests
-        if(requester==EventDbManager.CUSTOM_SEARCH_REQUEST) {
-            android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_FOREGROUND + Process.THREAD_PRIORITY_MORE_FAVORABLE);
-        } else {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND + Process.THREAD_PRIORITY_LESS_FAVORABLE);
-        }
 
-        getLocationRequestSubmitted();
+        //getLocationRequestSubmitted();
+        Location newLocation = getLocation();
+        if (newLocation == null) {
+
+            return null;
+        }
+        locationRequestSubmitted = Double.toString(newLocation.getLatitude()) + "," +
+                Double.toString(newLocation.getLongitude());
+        Log.i("Final Location String", locationRequestSubmitted);
+
 
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST && !requiresSync()) {
             //End Sync Process if not required
+            Log.i("Event Request", "Needs Sync? Sync not required.");
             return null;
+        } else {
+
+
+            Log.i("Event Request", "Needs Sync? Sync Required");
         }
         try {
             baseJsonUrl = getBaseJsonUrl();
@@ -114,31 +147,36 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
             Log.i("doInBackground", "Malformed URL");
         }
         getTotalItemQuantity(baseJsonUrl);
-        if(totalItems == 0) {
+        if (totalItems == 0) {
+            Log.i("doInBackground", "doInBackground: 0 Total Items");
             return null;
         }
         Log.i("EventRequest", "Total Items = " + totalItems);
 
         EventDbManager dbManager = new EventDbManager(context);
         dbManager.deleteEventRecords(requester);
+
         return null;
     }
 
-    protected void getLocationRequestSubmitted() {
-        LocationIdentifier locationIdentifier = new LocationIdentifier();
-        locationIdentifier.openConnection();
-        int ms = 0;
-        while (locationRequestSubmitted == null) {
-            ms += 1;
+    /*
+        protected void getLocationRequestSubmitted() {
+            LocationIdentifier locationIdentifier = new LocationIdentifier();
+            locationIdentifier.openConnection();
+            int ms = 0;
+            while (locationRequestSubmitted == null) {
+                ms += 1;
+            }
+            Log.i("getlrs", "getLocationRequestSubmitted: " + locationRequestSubmitted);
         }
-    }
 
+    */
     protected boolean requiresSync() {
         //Get Today's Date:
         Date today = new Date();
         todayDate = Integer.toString(today.getMonth()) +
-                        Integer.toString(today.getDate()) +
-                        Integer.toString(today.getHours());
+                Integer.toString(today.getDate()) +
+                Integer.toString(today.getHours());
 
         //Get last sync location and date
         SharedPreference sharedPreference = new SharedPreference();
@@ -147,21 +185,21 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         EventScorer eventScorer = new EventScorer();
         double milesBetweenSyncs = eventScorer.calculateDistance(lastSyncLocation, locationRequestSubmitted);
 
-        if(lastSyncDate.equals(todayDate) && milesBetweenSyncs < 3) {
+        if (lastSyncDate.equals(todayDate) && milesBetweenSyncs < 3) {
             Log.i("Sync?", "Does not need Sync. Now: " + todayDate + " LastSync: " + lastSyncDate +
                     "\nHere: " + locationRequestSubmitted + " LastSyncLocation: " + lastSyncLocation
-                    +"\nMilesBetweenSyncs: " + milesBetweenSyncs
+                    + "\nMilesBetweenSyncs: " + milesBetweenSyncs
             );
             return false;
         } else
             Log.i("Sync?", "Needs Sync. Now: " + todayDate + " LastSync: " + lastSyncDate +
                     "\nHere: " + locationRequestSubmitted + " LastSyncLocation: " + lastSyncLocation
-                    +"\nMilesBetweenSyncs: " + milesBetweenSyncs
+                    + "\nMilesBetweenSyncs: " + milesBetweenSyncs
             );
-            return true;
-        }
+        return true;
+    }
 
-    protected URL getBaseJsonUrl() throws MalformedURLException{
+    protected URL getBaseJsonUrl() throws MalformedURLException {
 
 
         String variableString = "Variable String Broken";
@@ -174,7 +212,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         String keywordsFormatted = keywords.replaceAll(" ", "+");
 
         switch (requester) {
-            case EventDbManager.RADAR_SEARCH_REQUEST :
+            case EventDbManager.RADAR_SEARCH_REQUEST:
                 locationString = "&where=" + locationRequestSubmitted;
                 keywordString = "";
                 dateString = "&date=Today";
@@ -182,13 +220,13 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
                 break;
             case EventDbManager.CUSTOM_SEARCH_REQUEST:
                 //Assign locationRequestSubmitted to location if none supplied by CustomSearch
-                if(location.isEmpty()) {
+                if (location.isEmpty()) {
                     locationString = "&where=" + locationRequestSubmitted;
                 } else {
                     locationString = "&location=" + locationFormatted;
                 }
                 //Assign today's date if none supplied by customSearch
-                if(date.isEmpty()) {
+                if (date.isEmpty()) {
                     dateString = "&date=Today";
                 } else {
                     dateString = "&date=" + date;
@@ -262,7 +300,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
             Log.i("Get Page Numbers", "JSON Exception");
 
 
-         return;
+            return;
         }
         return;
     }
@@ -273,7 +311,7 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         sharedPreference.save(context, todayDate, SharedPreference.PREFS_SYNC_DATE_KEY);
     }
 
-
+/*
     protected class LocationIdentifier implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
 
@@ -335,6 +373,8 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
 
     }
 
+    */
+
     public boolean isInternetAvailable() {
         try {
             InetAddress ipAddr = InetAddress.getByName("google.com");
@@ -344,4 +384,54 @@ public class EventRequest extends AsyncTask<Void, Void, Void>{
         }
     }
 
+    public Location getLocation() {
+
+        int hasPermission = context.getPackageManager()
+                .checkPermission("android.permission.ACCESS_FINE_LOCATION", "com.davidparkeredwards.fono");
+        if (hasPermission == context.getPackageManager().PERMISSION_GRANTED) {
+            Log.i("onConnected", "Location permission granted");
+
+            LocationManager lm = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
+            boolean gpsEnabled = lm.isProviderEnabled(LocationManager.GPS_PROVIDER);
+            boolean networkEnabled = lm.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
+
+            Location net_loc = null, gps_loc = null, final_loc = null;
+
+            try {
+                if (gpsEnabled) {
+                    gps_loc = lm.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+                    Log.i("GetLocation", "GPS is enabled. Location is " + gps_loc.toString());
+                }
+            } catch (Exception e) {
+                Log.i("GetLocation", "GPS is enabled but no last location");
+            }
+
+            try {
+
+
+                if (networkEnabled) {
+                    net_loc = lm.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+                    Log.i("GetLocation", "Network is enabled. Location is " + net_loc.toString());
+                }
+            } catch (Exception e) {
+                Log.i("GetLocation", "Network is enabled but no last location");
+            }
+
+            if (gps_loc != null) {
+                final_loc = gps_loc;
+                Log.i("GetLocation", "Final Location is GPS: " + final_loc.toString());
+                return final_loc;
+            } else if (net_loc != null) {
+                final_loc = net_loc;
+                Log.i("GetLocation", "Final Location is Network: " + final_loc.toString());
+                return final_loc;
+            } else {
+                Log.i("GetLocation", "No valid location from GPS or Network");
+                return null;
+            }
+        }
+        Log.i("GetLocation", "Permission not granted for location");
+
+        return  null;
+    }
 }

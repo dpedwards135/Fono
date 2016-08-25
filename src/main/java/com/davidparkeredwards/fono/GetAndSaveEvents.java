@@ -80,6 +80,8 @@ public class GetAndSaveEvents extends AsyncTask<Void, Void, Void> {
 
     @Override
     protected Void doInBackground(Void... params) {
+        Log.i("GetandSave", "doInBackground: Running GetandSaveEvents");
+
 
         publishProgress();
         if(requester==EventDbManager.CUSTOM_SEARCH_REQUEST) {
