@@ -1,28 +1,16 @@
 package com.davidparkeredwards.fono;
 
-import android.Manifest;
-import android.app.Activity;
 import android.content.Context;
-import android.content.pm.PackageManager;
+
 import android.location.Location;
 import android.location.LocationManager;
-import android.net.ConnectivityManager;
 import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.Process;
-import android.support.annotation.NonNull;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventScorer;
 import com.davidparkeredwards.fono.data.SharedPreference;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.api.GoogleApiClient;
-import com.google.android.gms.location.LocationServices;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -37,8 +25,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Date;
 
-/**
- * Created by User on 8/20/2016.
+/*EventRequest receives request from Radar or CustomSearch and checks that all the variables necessary
+    to run the API request are present and valid. It does a preliminary API call to find out how many
+    events are available, since only 100 may be fetched at a time, then launches parallel Async GetAndSaveEvents
+    to download all events as quickly as possible.
  */
 public class EventRequest extends AsyncTask<Void, Void, Void> {
 
@@ -56,8 +46,6 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     double totalItems = 0;
     boolean internetConnected;
 
-    //JSON Request String Elements
-
 
     public EventRequest(Context context, String location, String keywords, String date, String requester) {
         this.context = context;
@@ -67,46 +55,39 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
         this.requester = requester;
     }
 
-    @Override
-    protected void onPreExecute() {
-        Log.i("EventRequest", "onPreExecute: On PreExecute");
-        /////Check permissions
-        // Here, thisActivity is the current activity
-
-
-        super.onPreExecute();
-    }
 
     @Override
     protected void onPostExecute(Void aVoid) {
         super.onPostExecute(aVoid);
 
-        Log.i("OnPostExecute", "onPostExecute: ");
-
-
+        //If call failed because not connected to internet:
         if (internetConnected == false) {
             Toast toast = Toast.makeText(context, "Unable to get events: No internet connection",
                     Toast.LENGTH_LONG);
             toast.show();
             Log.i("Internet Connected", "onPostExecute: Internet Connection Failed");
             return;
+        //If unable to fetch last known location:
         } else if (locationRequestSubmitted == null) {
             Log.i("Event Request", "Event Request Unable to proceed without location");
             Toast toast = Toast.makeText(context, "Unable to proceed without system location info",
                     Toast.LENGTH_LONG);
             toast.show();
+        //If Eventful has no events for the area requested:
         } else if (totalItems == 0 && requester == EventDbManager.CUSTOM_SEARCH_REQUEST) {
             Toast toast = Toast.makeText(context, "No Events Found", Toast.LENGTH_LONG);
             toast.show();
             Log.i("TotalItems", "onPostExecute: 0 Items found");
             return;
         }
+        //If everything checks out, execute multiple GetAndSaveEvents to download all events promptly
         for (int i = 1; i <= Math.ceil(totalItems / 100); i++) {
             GetAndSaveEvents getAndSaveEvents = new GetAndSaveEvents(context, totalItems, i, baseJsonUrl, locationRequestSubmitted, requester);
             getAndSaveEvents.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             Log.i("For loop", "onPostExecute: Getting and Saving Events Loop");
         }
 
+        //If requester is Radar, save the sync date and location to avoid unnecessary syncs later
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
             saveSyncDateAndLocation();
         }
@@ -124,38 +105,35 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
 
         /////Check internet connection and cancel if unavailable
         Log.i("EventRequest", "doInBackground: Running EventRequest");
-
         internetConnected = isInternetAvailable();
         Log.i("Internet Connected?", "IC == " + internetConnected);
         if (internetConnected == false) {
             return null;
         }
-
-        //getLocationRequestSubmitted();
+        //Get the location of user
         Location newLocation = getLocation();
         if (newLocation == null) {
-
             return null;
         }
         locationRequestSubmitted = Double.toString(newLocation.getLatitude()) + "," +
                 Double.toString(newLocation.getLongitude());
         Log.i("Final Location String", locationRequestSubmitted);
 
-
+        //Check if sync is necessary
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST && !requiresSync()) {
             //End Sync Process if not required
             Log.i("Event Request", "Needs Sync? Sync not required.");
             return null;
         } else {
-
-
             Log.i("Event Request", "Needs Sync? Sync Required");
         }
+        //Get the base URL for the Json request
         try {
             baseJsonUrl = getBaseJsonUrl();
         } catch (MalformedURLException e) {
             Log.i("doInBackground", "Malformed URL");
         }
+        //Get the total events available from Eventful
         getTotalItemQuantity(baseJsonUrl);
         if (totalItems == 0) {
             Log.i("doInBackground", "doInBackground: 0 Total Items");
@@ -163,24 +141,15 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
         }
         Log.i("EventRequest", "Total Items = " + totalItems);
 
+        //If you make it this far, delete the old events from DB in preparation to insert fresh ones
         EventDbManager dbManager = new EventDbManager(context);
         dbManager.deleteEventRecords(requester);
 
         return null;
     }
 
-    /*
-        protected void getLocationRequestSubmitted() {
-            LocationIdentifier locationIdentifier = new LocationIdentifier();
-            locationIdentifier.openConnection();
-            int ms = 0;
-            while (locationRequestSubmitted == null) {
-                ms += 1;
-            }
-            Log.i("getlrs", "getLocationRequestSubmitted: " + locationRequestSubmitted);
-        }
+    //Following methods are implemented in doInBackground or postExecute
 
-    */
     protected boolean requiresSync() {
         //Get Today's Date:
         Date today = new Date();
@@ -210,7 +179,6 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
     }
 
     protected URL getBaseJsonUrl() throws MalformedURLException {
-
 
         String variableString = "Variable String Broken";
         String radiusString = "&within=25"; //Radius in which to search for events, presently hard-coded
@@ -301,15 +269,12 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
                 }
             }
         }
-
         totalItems = 0;
         try {
             JSONObject eventfulString = new JSONObject(eventsJsonStr);
             totalItems = Integer.valueOf(eventfulString.getString("total_items"));
         } catch (JSONException e) {
             Log.i("Get Page Numbers", "JSON Exception");
-
-
             return;
         }
         return;
@@ -321,69 +286,6 @@ public class EventRequest extends AsyncTask<Void, Void, Void> {
         sharedPreference.save(context, todayDate, SharedPreference.PREFS_SYNC_DATE_KEY);
     }
 
-/*
-    protected class LocationIdentifier implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
-
-
-        GoogleApiClient mGoogleApiClient;
-        PackageManager packageManager;
-        int hasPermission;
-        Location mLastLocation;
-
-
-        public Void openConnection() {
-
-            packageManager = context.getPackageManager();
-            if (mGoogleApiClient == null) {
-                mGoogleApiClient = new GoogleApiClient.Builder(context)
-
-                        .addConnectionCallbacks(this)
-
-                        .addOnConnectionFailedListener(this)
-                        .addApi(LocationServices.API)
-                        .build();
-            }
-            mGoogleApiClient.connect();
-
-            return null;
-        }
-
-        @Override
-        public void onConnectionSuspended(int i) {
-
-        }
-
-
-        @Override
-        public void onConnected(Bundle connectionHint) {
-            String newCenterLocation = "";
-            Log.i("onConnected", "onConnected: Connecting ");
-
-            hasPermission = packageManager.checkPermission("android.permission.ACCESS_FINE_LOCATION", "com.davidparkeredwards.fono");
-            Log.i("onConnected", "onConnected: " + hasPermission);
-            if (hasPermission == packageManager.PERMISSION_GRANTED) {
-                mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-                Log.i("onConnected", "onConnected: Permission passed");
-                if (mLastLocation != null) {
-                    Log.i("Last Location", String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude()));
-                    newCenterLocation = String.valueOf(mLastLocation.getLatitude()) + "," + String.valueOf(mLastLocation.getLongitude());
-                    locationRequestSubmitted = newCenterLocation;
-                }
-                Log.i("Location Info", "Current location: " + newCenterLocation);
-
-                mGoogleApiClient.disconnect();
-            }
-
-        }
-
-        @Override
-        public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-
-        }
-
-    }
-
-    */
 
     public boolean isInternetAvailable() {
         try {

@@ -19,11 +19,9 @@ import android.util.Log;
 import java.util.ArrayList;
 
 /**
- * Created by User on 8/8/2016.
+ * EventsProvider is the ContentProvider
  */
 public class EventsProvider extends ContentProvider {
-
-    //Right now all I need is to pull all events from the database, no custom queries.
 
     //URI Matcher used by this content provider.
     private static final UriMatcher sUriMatcher = buildUriMatcher();
@@ -45,7 +43,6 @@ public class EventsProvider extends ContentProvider {
             EventsContract.EventEntry.TABLE_NAME+
              "." + EventsContract.EventEntry._ID + " = ? ";
 
-    //
 
 
     private Cursor getEventsById(Uri uri, String[] projection, String sortOrder) {
@@ -189,7 +186,7 @@ public class EventsProvider extends ContentProvider {
 
     @Override
     public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
-        //needs something more here
+
         final SQLiteDatabase db = mOpenHelper.getWritableDatabase();
         final int match = sUriMatcher.match(uri);
         int updatedRows = 0;

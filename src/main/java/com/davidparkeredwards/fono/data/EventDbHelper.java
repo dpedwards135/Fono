@@ -7,9 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
 
-/**
- * Created by User on 7/30/2016.
- */
+
 public class EventDbHelper extends SQLiteOpenHelper{
     private static final int DATABASE_VERSION = 1;
 

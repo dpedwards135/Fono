@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity  {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        //Check if location permission granted, request if not
         if (ContextCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_FINE_LOCATION)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -55,12 +57,12 @@ public class MainActivity extends AppCompatActivity  {
                 ActivityCompat.requestPermissions(this,
                         new String[]{Manifest.permission.ACCESS_FINE_LOCATION},1);
      }
-
-
+        //Assign variables to views
         radarSelector = (ImageView) findViewById(R.id.radarViewSelector);
         preferenceSelector = (ImageView) findViewById(R.id.preferenceViewSelector);
         customSearchSelector = (ImageView) findViewById(R.id.customSearchViewSelector);
 
+        //Populate container with radar fragment none other indicated in savedInstanceState
         if (savedInstanceState == null) {
             Bundle radarBundle = new Bundle();
             radarBundle.putString("Requester", EventDbManager.RADAR_SEARCH_REQUEST);
@@ -74,6 +76,7 @@ public class MainActivity extends AppCompatActivity  {
             String savedView = savedInstanceState.getString("View");
             Log.i("Saved View", savedView);
         }
+        //Initialize SyncAdapter and run immediately
         FonoSyncAdapter fonoSyncAdapter = new FonoSyncAdapter(this, true);
         fonoSyncAdapter.initializeSyncAdapter(this);
         fonoSyncAdapter.syncImmediately(this);
@@ -83,6 +86,7 @@ public class MainActivity extends AppCompatActivity  {
     }
 
 
+    //Following three methods are for launching appropriate fragments in container view
     public void launchCustomSearch(View view) {
         Bundle radarBundle = new Bundle();
         radarBundle.putString("Requester", EventDbManager.CUSTOM_SEARCH_REQUEST);
@@ -113,6 +117,7 @@ public class MainActivity extends AppCompatActivity  {
         changeSelectedFragment();
     }
 
+    //This method switches indicator from one icon to another as needed
     public void changeSelectedFragment() {
         radarSelector.setBackgroundResource(0);
         preferenceSelector.setBackgroundResource(0);
@@ -133,9 +138,7 @@ public class MainActivity extends AppCompatActivity  {
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        //I need to add a variable that indicates which fragment is currently loaded
-        //so that it can be reloaded as if the button was pressed again.
-
+        //Record which fragment was last up so that user can return to it onRestoreInstanceState
         outState.putString("View", Integer.toString(viewSelected));
         Log.i("onSaveInstanceState", "selected view: " + Integer.toString(viewSelected));
         super.onSaveInstanceState(outState);
@@ -185,8 +188,6 @@ public class MainActivity extends AppCompatActivity  {
                                            String permissions[], int[] grantResults) {
         switch (requestCode) {
             case 1: {
-
-                // If request is cancelled, the result arrays are empty.
                 if (grantResults.length > 0
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     Toast.makeText(MainActivity.this, "Location permission granted", Toast.LENGTH_SHORT).show();
@@ -194,17 +195,12 @@ public class MainActivity extends AppCompatActivity  {
                     fonoSyncAdapter.syncImmediately(this);
 
                 } else {
-
-                    // permission denied, boo! Disable the
-                    // functionality that depends on this permission.
                     Toast.makeText(MainActivity.this, "Location permission denied, unable to search events",
                             Toast.LENGTH_SHORT).show();
                 }
                 return;
             }
 
-            // other 'case' lines to check for other
-            // permissions this app might request
         }
     }
 }

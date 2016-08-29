@@ -2,8 +2,7 @@ package com.davidparkeredwards.fono;
 
 import java.util.List;
 
-/**
- * Created by User on 7/26/2016.
+/* FonoEvent is modeled on real world event, with corresponding info
  */
 public class FonoEvent {
 

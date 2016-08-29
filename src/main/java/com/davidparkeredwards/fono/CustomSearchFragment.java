@@ -50,12 +50,13 @@ import java.util.Set;
 import java.util.zip.Inflater;
 
 
+
+//CustomSearchFragment serves Radar and Custom Search tabs
 public class CustomSearchFragment extends Fragment implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private static final int EVENTS_LOADER = 0;
     private View rootView;
     List<FonoEvent> listViewInfo;
-    //private EventsAdapter eventsAdapter;
     ArrayAdapter<FonoEventScored> arrayAdapter;
     String requester;
     List<FonoEventScored> listViewInfoScored;
@@ -81,20 +82,16 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        //Set view settings
+        //Set view settings and inflate listView
         requester = getArguments().getString("Requester");
         rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
-
-
         ListView listView = (ListView) rootView.findViewById(R.id.custom_search_list_view);
         View searchToggle = rootView.findViewById(R.id.searchToggle);
-
-
         if (requester == EventDbManager.RADAR_SEARCH_REQUEST) {
             searchToggle.setVisibility(View.GONE);
         }
-        //Button customSearchButton = (Button) rootView.findViewById(R.id.customSearchButton);
 
+        //This onClickListener triggers the search popup for custom search
         View.OnClickListener searchToggleListener = new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -106,6 +103,7 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
         };
         searchToggle.setOnClickListener(searchToggleListener);
 
+        //Following code inflates the ViewHolder for listView
         arrayAdapter = new ArrayAdapter<FonoEventScored>(getActivity(), R.layout.list_item_events){
 
             LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -118,15 +116,10 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
 
-                // A ViewHolder keeps references to children views
-                // to avoid unneccessary calls to findViewById() on each row.
                 ViewHolder holder;
 
                 if (null == convertView) {
                     convertView = inflater.inflate(R.layout.list_item_events, null);
-
-                    // Creates a ViewHolder and store references to
-                    // the two children views we want to bind data to.
                     holder = new ViewHolder();
                     holder.name = (TextView) convertView.findViewById(R.id.listItemName);
                     holder.venueName = (TextView) convertView.findViewById(R.id.listItemVenueName);
@@ -134,12 +127,9 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
                     holder.distance = (TextView) convertView.findViewById(R.id.listItemDistance);
                     convertView.setTag(holder);
                 } else {
-                    // Get the ViewHolder back to get fast access to the TextView
-                    // and the ImageView.
                     holder = (ViewHolder) convertView.getTag();
-
                 }
-                // Bind the data efficiently with the holder.
+
 
                 holder.name.setText(getItem(position).getName());
                 holder.venueName.setText(getItem(position).getVenueName());
@@ -169,13 +159,13 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             }
         };
 
-
+        //Set Adapter to listView
         listView.setAdapter(arrayAdapter);
+        //OnClickListener takes user to event details
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                // ((ListView) parent).getItemAtPosition(position);
-                int wrongId = arrayAdapter.getItem(position).getId();
+
                 int _id = listViewInfoScored.get(position).getId();
 
                 Intent intent = new Intent(getActivity(), EventDetail.class)
@@ -225,6 +215,8 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
 
     }
 
+    //scoreAndProcessEvents takes event information from CursorLoader and converts it to FonoEventScored
+    //object that can be displayed in listView
     public void scoreAndProcessEvents(List<FonoEvent> listViewInfo) {
         listViewInfoScored = new ArrayList<>();
         for (FonoEvent fonoEvent : listViewInfo) {
@@ -246,6 +238,7 @@ public class CustomSearchFragment extends Fragment implements LoaderManager.Load
             listViewInfoScored.add(fonoEventScored);
         }
 
+        //sort events by event score for relevance
         Collections.sort(listViewInfoScored, new Comparator<FonoEventScored>() {
             @Override
             public int compare(FonoEventScored lhs, FonoEventScored rhs) {

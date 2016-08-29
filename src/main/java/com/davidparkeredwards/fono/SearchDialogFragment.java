@@ -20,6 +20,8 @@ import android.widget.Toast;
 import com.davidparkeredwards.fono.data.EventDbManager;
 import com.davidparkeredwards.fono.data.EventScorer;
 
+
+//This class defines the popup for CustomSearch
 public class SearchDialogFragment extends DialogFragment {
 
 
@@ -30,28 +32,11 @@ public class SearchDialogFragment extends DialogFragment {
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
-        //rootView = inflater.inflate(R.layout.fragment_custom_search, container, false);
-
-
-
         final AlertDialog dialog = new AlertDialog.Builder(getActivity()).create();
-        // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        // Inflate and set the layout for the dialog
-        // Pass null as the parent view because its going in the dialog layout
         View view = inflater.inflate(R.layout.search_popup, null);
         dialog.setView(view);
-                // Add action buttons
-                /*
-                .setNeutralButton("Search Now", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int id) {
-                        Log.i("SearchDialogFragment", "Just Clicked Search");
-                        customEventRequest();
-                    }
-                });
-                */
         keywordET = (EditText) view.findViewById(R.id.customKeywords);
         locationET = (EditText) view.findViewById(R.id.customLocation);
         datePicker = (DatePicker) view.findViewById(R.id.customDatePicker);
@@ -132,7 +117,6 @@ public class SearchDialogFragment extends DialogFragment {
         customEventRequest.execute();
         Toast toast = Toast.makeText(FONO.getContext(), "Searching", Toast.LENGTH_LONG);
         toast.show();
-       // EventScorer es = new EventScorer();
-       // es.allCategoriesToLog(FONO.getContext());
+
     }
 }

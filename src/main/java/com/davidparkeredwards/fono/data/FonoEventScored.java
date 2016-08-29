@@ -5,9 +5,9 @@ import android.util.Log;
 import com.davidparkeredwards.fono.FONO;
 import com.davidparkeredwards.fono.FonoEvent;
 
-/**
- * Created by User on 8/18/2016.
- */
+
+//FonoEventScored is the same as FonoEvent, but has eventScore and distance
+
 public class FonoEventScored extends FonoEvent {
 
     String name;
@@ -176,7 +176,7 @@ public class FonoEventScored extends FonoEvent {
 
     public FonoEventScored(String name, String date, String venueName, String address, String description,
                      String category_1, String category_2, String category_3, String linkToOrigin,
-                     int id, String locationCoordinates, String requestCoordinates, String requester) {//, String eventScore, String distance) {
+                     int id, String locationCoordinates, String requestCoordinates, String requester) {
         this.name = name;
         this.date = date;
         this.venueName = venueName;

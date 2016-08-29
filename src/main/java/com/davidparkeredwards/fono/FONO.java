@@ -3,8 +3,7 @@ package com.davidparkeredwards.fono;
 import android.app.Application;
 import android.content.Context;
 
-/**
- * Created by User on 8/11/2016.
+/** This class provides an instance and context for the application for use where needed
  */
 public class FONO extends Application {
 

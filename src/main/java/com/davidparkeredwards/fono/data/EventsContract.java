@@ -11,7 +11,7 @@ import com.davidparkeredwards.fono.R;
 import java.util.List;
 
 /**
- * Created by User on 7/30/2016.
+ * EventsContract defines how data it organized in DB and interacts with application
  */
 public class EventsContract {
 

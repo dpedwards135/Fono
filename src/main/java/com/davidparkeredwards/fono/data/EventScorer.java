@@ -17,7 +17,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Created by User on 8/16/2016.
+ * EventScorer runs analysis on events to return distances, scores, and lists of categories
  */
 public class EventScorer {
 
@@ -72,6 +72,7 @@ public class EventScorer {
           NotNull Description = +100
           Distance = (0-distance/1000) - Few places on earth where this will be more than |10|
         */
+
         //Get Score for distance
         double milesScore = 0 - (distance/1000);
         score = score + milesScore;
@@ -90,7 +91,6 @@ public class EventScorer {
             score = score + 1000;
         }
 
-        ///////Check score
 
         return score;
 
@@ -131,10 +131,8 @@ public class EventScorer {
         return eventsList;
     }
 
-    /* Approach to scoring:
-     *
-     */
-
+    //This method not presently in use, calculates scores and saves them to DB, scores are calculated
+    //on the fly at this time, when they are added to arrayAdapters.
     public void bulkReScore(Context context, String requester) {
 
         Log.i(TAG, "scoreEvents: Scoring Events");

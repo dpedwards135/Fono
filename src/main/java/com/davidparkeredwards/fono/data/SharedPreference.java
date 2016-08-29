@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.Set;
 
-
+//Statics and methods for managing SharedPreferences
 public class SharedPreference {
 
     public static final String PREFS_NAME = FONO.getContext().getString(R.string.prefs_name);
@@ -29,12 +29,12 @@ public class SharedPreference {
         SharedPreferences settings;
         Editor editor;
 
-        settings = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE); //1
-        editor = settings.edit(); //2
+        settings = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        editor = settings.edit();
 
-        editor.putString(value, text); //3
+        editor.putString(value, text);
 
-        editor.commit(); //4
+        editor.commit();
     }
     public void saveCategories(Context context, Set<String> categoriesList) {
         SharedPreferences settings;

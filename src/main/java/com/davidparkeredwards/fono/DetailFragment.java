@@ -33,21 +33,20 @@ import com.davidparkeredwards.fono.data.EventsContract;
 
 import org.w3c.dom.Text;
 
-
+//Fragment uses CursorLoader to load data from contentProvider
 public class DetailFragment extends Fragment implements android.support.v4.app.LoaderManager.LoaderCallbacks<Cursor> {
 
 
     private static final int DETAIL_LOADER = 0;
+
     TextView detailName;
     TextView detailDateAndLocation;
     TextView detailDescription;
     TextView detailCategories;
-    //TextView detailLinkToOrigin;
     ImageView backButton;
     LinearLayout mapButton;
     TextView mapButtonText;
     Button goToWebPage;
-
     String name;
     double distance;
     String locationCoordinates;
@@ -60,24 +59,16 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
         super.onCreate(savedInstanceState);
     }
 
-/*  Put Menu items here
-    @Override
- *   public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
- *       inflater.inflate(R.menu.eventsfragment, menu);
- *
- */
-
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
 
+        //Assign variables to views for display
         View rootView = inflater.inflate(R.layout.fragment_detail, container, false);
-
         detailName = (TextView) rootView.findViewById(R.id.detailName);
         detailDateAndLocation = (TextView) rootView.findViewById(R.id.detailDateAndLocation);
         detailDescription = (TextView) rootView.findViewById(R.id.detailDescription);
         detailCategories = (TextView) rootView.findViewById(R.id.detailCategories);
-        //detailLinkToOrigin = (TextView) rootView.findViewById(R.id.detailLinkToOrigin);
         backButton = (ImageView) rootView.findViewById(R.id.backButton);
         mapButton = (LinearLayout) rootView.findViewById(R.id.goToMap);
         mapButtonText = (TextView) rootView.findViewById(R.id.goToMapText);
@@ -89,7 +80,6 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
                 getActivity().finish();
             }
         });
-
 
         mapButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -105,9 +95,7 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
             }
         });
 
-
         return rootView;
-
     }
 
     @Override
@@ -116,21 +104,16 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
         super.onActivityCreated(savedInstanceState);
     }
 
-    //private void updateEvents --> Put AsyncTask here
-
 
     @Override
     public void onStart() {
         super.onStart();
-        /*AsyncTask<String, Void, String> setDisplay = new EventRequest(this, locCoordinates, listView)
-                .execute(locCoordinates);
-        */
     }
 
     @Override
     public android.support.v4.content.Loader<Cursor> onCreateLoader(int i, Bundle args) {
 
-
+        //Pull event clicked from intent data to populate event details
         Intent intent = getActivity().getIntent();
 
         if (intent == null) {
@@ -143,14 +126,13 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
                     null,
                     null,
                     null);
-
-
     }
 
     @Override
     public void onLoadFinished(android.support.v4.content.Loader<Cursor> loader, Cursor data) {
-        Log.i("onLoadFinished", "In on load finished");
 
+        //Pull relevant information about the event from the cursor
+        Log.i("onLoadFinished", "In on load finished");
         if (!data.moveToFirst()) { return; }
 
         name = data.getString(EventDbManager.COL_NAME);
@@ -165,12 +147,10 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
         locationCoordinates = data.getString(EventDbManager.COL_LOCATION_COORDINATES);
         String requestCoordinates = data.getString(EventDbManager.COL_REQUEST_COORDINATES);
 
+        //Use EventScorer to calculate distance
         EventScorer eventScorer = new EventScorer();
         distance =  (double) Math.ceil(eventScorer.calculateDistance(locationCoordinates, requestCoordinates) * 100) / 100;
-
-
-        Log.i("Detail Check", "onLoadFinished: " + name + description);
-
+        //Set info to views
         detailName.setText(name);
         detailDateAndLocation.setText(date + "\n" + venueName + "\n" + address);
         mapButtonText.setText(distance + " miles away" +
@@ -181,7 +161,6 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
                 "\n"+category_1+
                 "\n"+category_2+
                 "\n"+category_3 );
-        //detailLinkToOrigin.setText(linkToOrigin);
     }
 
 
@@ -191,11 +170,12 @@ public class DetailFragment extends Fragment implements android.support.v4.app.L
     }
 
     public void goToWebPage() {
+        //Implicit intent to launch browser to display web page source
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(linkToOrigin)));
     }
 
     public void showMap() {
-
+        //Implicit intent to launch maps app to display location by coordinates with event name tag
         Uri geoIntent = Uri.parse("geo:0,0?q=" + locationCoordinates+"(" + name + ")");
         Intent intent = new Intent(Intent.ACTION_VIEW);
         intent.setData(geoIntent);

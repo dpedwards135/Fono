@@ -28,8 +28,8 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Created by User on 8/20/2016.
+/** GetAndSaveEvents downloads events from server 100 at a time and saves them to DB
+ *  Parses JSON strings to FonoEvents to eventsList
  */
 public class GetAndSaveEvents extends AsyncTask<Void, Void, Void> {
 
@@ -51,13 +51,6 @@ public class GetAndSaveEvents extends AsyncTask<Void, Void, Void> {
         
     }
 
-    @Override
-    protected void onPreExecute() {
-        super.onPreExecute();
-        if(requester == EventDbManager.CUSTOM_SEARCH_REQUEST) {
-
-        }
-    }
     @Override
     protected void onProgressUpdate(Void... values) {
         if(requester==EventDbManager.CUSTOM_SEARCH_REQUEST) {
