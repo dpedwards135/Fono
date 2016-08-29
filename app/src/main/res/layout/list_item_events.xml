@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical"
+    android:id="@+id/list_item_events_textview"
+    android:textColor="#000000"
+    android:orientation="horizontal"
+    android:background="@drawable/list_item_background"
+    android:padding="10dp">
+
+    <ImageView
+        android:layout_width="75dp"
+        android:layout_height="75dp"
+        android:paddingRight="10dp"
+        android:paddingBottom="10dp"
+        android:paddingTop="10dp"
+        android:text="This is the category image field"
+        android:textColor="#000000"
+        android:id="@+id/listItemCategoryImage"/>
+
+    <LinearLayout
+        android:layout_weight="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="vertical" >
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is the name field"
+            android:textColor="#000000"
+            android:textStyle="bold"
+            android:id="@+id/listItemName"/>
+
+        <TextView
+
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is the venue name field"
+            android:textColor="#000000"
+            android:id="@+id/listItemVenueName"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="This is the distance field"
+            android:textColor="#000000"
+            android:id="@+id/listItemDistance"
+            android:gravity="right"
+
+            android:layout_gravity="right" />
+
+    </LinearLayout>
+
+</LinearLayout>

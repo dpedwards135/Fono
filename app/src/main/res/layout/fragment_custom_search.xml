@@ -1,0 +1,27 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    tools:context="com.davidparkeredwards.fono.CustomSearchFragment">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:foregroundGravity="right"
+        android:id="@+id/searchToggle"
+        android:src="@drawable/search_small"
+        android:padding="5dp"
+        android:scaleY="1.0"
+        android:background="@drawable/search_bar"
+        android:text="Open PopUp" />
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/custom_search_list_view">
+    </ListView>
+
+
+
+</LinearLayout>
